@@ -16,25 +16,37 @@ class AddServiceScreen extends ConsumerStatefulWidget {
 class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
   final titleController = TextEditingController();
 
-  final mileageController = TextEditingController();
+  final kilometresController = TextEditingController();
 
   final priceController = TextEditingController();
 
   final noteController = TextEditingController();
 
+  DateTime selectedDate = DateTime.now();
+
   void saveService() {
+    if (titleController.text.isEmpty ||
+        kilometresController.text.isEmpty ||
+        priceController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Vyplň všechna povinná pole")),
+      );
+
+      return;
+    }
+
     final service = ServiceRecord(
       id: DateTime.now().toString(),
 
       carId: widget.carId,
 
-      date: DateTime.now(),
+      date: selectedDate,
 
-      kilometers: int.parse(mileageController.text),
+      kilometers: int.tryParse(kilometresController.text) ?? 0,
 
       title: titleController.text,
 
-      price: double.parse(priceController.text),
+      price: double.tryParse(priceController.text) ?? 0,
 
       note: noteController.text,
     );
@@ -61,7 +73,7 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
             ),
 
             TextField(
-              controller: mileageController,
+              controller: kilometresController,
 
               keyboardType: TextInputType.number,
 
@@ -83,6 +95,34 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
             ),
 
             const SizedBox(height: 20),
+
+            ListTile(
+              leading: const Icon(Icons.calendar_month),
+
+              title: Text(
+                "${selectedDate.day}.${selectedDate.month}.${selectedDate.year}",
+              ),
+
+              trailing: const Icon(Icons.edit),
+
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+
+                  initialDate: selectedDate,
+
+                  firstDate: DateTime(2000),
+
+                  lastDate: DateTime.now(),
+                );
+
+                if (date != null) {
+                  setState(() {
+                    selectedDate = date;
+                  });
+                }
+              },
+            ),
 
             FilledButton(onPressed: saveService, child: const Text("Uložit")),
           ],

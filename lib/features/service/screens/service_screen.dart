@@ -1,4 +1,5 @@
 import 'package:autolog/features/service/providers/service_provider.dart';
+import 'package:autolog/features/service/widgets/service_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,14 +25,7 @@ class ServiceScreen extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final service = carServices[index];
 
-                return ListTile(
-                  leading: const Icon(Icons.build),
-                  title: Text(service.title),
-                  subtitle: Text(
-                    "${service.kilometers} km\n${service.date.day}.${service.date.month}.${service.date.year}",
-                  ),
-                  trailing: Text("${service.price.toStringAsFixed(0)} Kč"),
-                );
+                return ServiceCard(service: service);
               },
             ),
 
