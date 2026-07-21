@@ -9,7 +9,7 @@ class ServiceNotifier extends StateNotifier<List<ServiceRecord>> {
   }
 
   void removeService(ServiceRecord service) {
-    state = [...state, service];
+    state = state.where((s) => s.id != service.id).toList();
   }
 
   List<ServiceRecord> getByCar(String carId) {
