@@ -1,6 +1,8 @@
 import 'package:autolog/features/cars/screens/add_car_screen.dart';
 import 'package:autolog/features/cars/screens/car_dashboard_screen.dart';
 import 'package:autolog/features/cars/screens/home_screen.dart';
+import 'package:autolog/features/fuel/screens/add_fuel_screen.dart';
+import 'package:autolog/features/fuel/screens/fuel_screen.dart';
 import 'package:autolog/features/service/screens/add_service_screen.dart';
 import 'package:autolog/features/service/screens/service_screen.dart';
 import 'package:go_router/go_router.dart';
@@ -36,6 +38,24 @@ final appRouter = GoRouter(
         final carId = state.pathParameters['carId']!;
 
         return AddServiceScreen(carId: carId);
+      },
+    ),
+    GoRoute(
+      path: '/fuel/:carId',
+
+      builder: (context, state) {
+        final carId = state.pathParameters['carId']!;
+
+        return FuelScreen(carId: carId);
+      },
+    ),
+    GoRoute(
+      path: '/fuel/:carId/add',
+
+      builder: (context, state) {
+        final carId = state.pathParameters['carId']!;
+
+        return AddFuelScreen(carId: carId);
       },
     ),
   ],

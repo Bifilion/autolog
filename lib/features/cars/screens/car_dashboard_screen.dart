@@ -1,5 +1,6 @@
 import 'package:autolog/features/cars/providers/car_provider.dart';
 import 'package:autolog/features/cars/widgets/dashboard_card.dart';
+import 'package:autolog/features/expenses/providers/expense_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +13,12 @@ class CarDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final car = ref.read(carProvider.notifier).getCarById(carId);
+
+    final fuelCost = ref.watch(totalFuelCostProvider(carId));
+
+    final serviceCost = ref.watch(totalServiceCostProvider(carId));
+
+    final totalCost = fuelCost + serviceCost;
 
     if (car == null) {
       return Scaffold(
@@ -49,10 +56,18 @@ class CarDashboardScreen extends ConsumerWidget {
                 },
               ),
             ),
-            DashboardCard(
-              icon: Icons.local_gas_station,
-              title: "Tankování",
-              value: "Žádné záznamy",
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.local_gas_station),
+
+                title: const Text("Tankování"),
+
+                subtitle: const Text("Žádná data"),
+
+                onTap: () {
+                  context.push('/fuel/$carId');
+                },
+              ),
             ),
 
             DashboardCard(
@@ -64,7 +79,10 @@ class CarDashboardScreen extends ConsumerWidget {
             DashboardCard(
               icon: Icons.attach_money,
               title: "Náklady",
-              value: "0 Kč",
+              value:
+                  "Palivo: ${fuelCost.toStringAsFixed(0)} Kč\n"
+                  "Servis: ${serviceCost.toStringAsFixed(0)} Kč\n"
+                  "Celkem: ${totalCost.toStringAsFixed(0)} Kč",
             ),
           ],
         ),
