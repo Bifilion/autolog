@@ -1,8 +1,12 @@
+import 'package:autolog/core/providers/repository_providers.dart';
 import 'package:autolog/features/cars/models/car.dart';
+import 'package:autolog/features/cars/repositories/car_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CarNotifier extends StateNotifier<List<Car>> {
-  CarNotifier() : super([]);
+  final CarRepository repository;
+
+  CarNotifier(this.repository) : super(repository.getAll());
 
   Car? getCarById(String id) {
     try {
@@ -13,14 +17,20 @@ class CarNotifier extends StateNotifier<List<Car>> {
   }
 
   void addCar(Car car) {
-    state = [...state, car];
+    repository.add(car);
+
+    state = repository.getAll();
   }
 
   void removeCar(Car car) {
-    state = state.where((c) => c != car).toList();
+    repository.remove(car.id);
+
+    state = repository.getAll();
   }
 }
 
-final carProvider = StateNotifierProvider<CarNotifier, List<Car>>(
-  (ref) => CarNotifier(),
-);
+final carProvider = StateNotifierProvider<CarNotifier, List<Car>>((ref) {
+  final repository = ref.read(carRepositoryProvider);
+
+  return CarNotifier(repository);
+});

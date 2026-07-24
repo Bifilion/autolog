@@ -1,15 +1,23 @@
+import 'package:autolog/core/providers/repository_providers.dart';
 import 'package:autolog/features/fuel/models/fuel_record.dart';
+import 'package:autolog/features/fuel/repositories/fuel_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FuelNotifier extends StateNotifier<List<FuelRecord>> {
-  FuelNotifier() : super([]);
+  final FuelRepository repository;
+
+  FuelNotifier(this.repository) : super(repository.getAll());
 
   void addFuel(FuelRecord fuel) {
-    state = [...state, fuel];
+    repository.add(fuel);
+
+    state = repository.getAll();
   }
 
   void removeFuel(FuelRecord fuel) {
-    state = state.where((f) => f.id != fuel.id).toList();
+    repository.remove(fuel.id);
+
+    state = repository.getAll();
   }
 
   double calculateConsumption(String carId) {
@@ -32,6 +40,10 @@ class FuelNotifier extends StateNotifier<List<FuelRecord>> {
   }
 }
 
-final fuelProvider = StateNotifierProvider<FuelNotifier, List<FuelRecord>>(
-  (ref) => FuelNotifier(),
-);
+final fuelProvider = StateNotifierProvider<FuelNotifier, List<FuelRecord>>((
+  ref,
+) {
+  final repository = ref.read(fuelRepositoryProvider);
+
+  return FuelNotifier(repository);
+});

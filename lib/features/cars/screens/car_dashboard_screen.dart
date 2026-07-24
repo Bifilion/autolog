@@ -1,6 +1,7 @@
 import 'package:autolog/features/cars/providers/car_provider.dart';
 import 'package:autolog/features/cars/widgets/dashboard_card.dart';
 import 'package:autolog/features/expenses/providers/expense_provider.dart';
+import 'package:autolog/features/service/providers/service_stats_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +20,8 @@ class CarDashboardScreen extends ConsumerWidget {
     final serviceCost = ref.watch(totalServiceCostProvider(carId));
 
     final totalCost = fuelCost + serviceCost;
+
+    final latestService = ref.watch(latestServiceProvider(carId));
 
     if (car == null) {
       return Scaffold(
@@ -74,6 +77,14 @@ class CarDashboardScreen extends ConsumerWidget {
               icon: Icons.notifications,
               title: "Připomínky",
               value: "Žádné záznamy",
+            ),
+
+            DashboardCard(
+              icon: Icons.build,
+              title: "Poslední servis",
+              value: latestService == null
+                  ? "Žádný záznam"
+                  : latestService.title,
             ),
 
             DashboardCard(

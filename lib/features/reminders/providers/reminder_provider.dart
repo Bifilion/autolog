@@ -1,15 +1,23 @@
+import 'package:autolog/core/providers/repository_providers.dart';
 import 'package:autolog/features/reminders/models/reminder.dart';
+import 'package:autolog/features/reminders/repositories/reminder_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ReminderNotifier extends StateNotifier<List<Reminder>> {
-  ReminderNotifier() : super([]);
+  final ReminderRepository repository;
+
+  ReminderNotifier(this.repository) : super(repository.getAll());
 
   void addReminder(Reminder reminder) {
-    state = [...state, reminder];
+    repository.add(reminder);
+
+    state = repository.getAll();
   }
 
   void removeReminder(Reminder reminder) {
-    state = state.where((r) => r.id != reminder.id).toList();
+    repository.remove(reminder.id);
+
+    state = repository.getAll();
   }
 
   List<Reminder> getByCar(String carId) {
@@ -31,6 +39,8 @@ class ReminderNotifier extends StateNotifier<List<Reminder>> {
 }
 
 final reminderProvider =
-    StateNotifierProvider<ReminderNotifier, List<Reminder>>(
-      (ref) => ReminderNotifier(),
-    );
+    StateNotifierProvider<ReminderNotifier, List<Reminder>>((ref) {
+      final repository = ref.read(reminderRepositoryProvider);
+
+      return ReminderNotifier(repository);
+    });
