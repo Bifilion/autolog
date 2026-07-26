@@ -10,65 +10,86 @@ class FuelScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final fuels = ref
-        .watch(fuelProvider)
-        .where((fuel) => fuel.carId == carId)
-        .toList();
-
-    final consumption = ref
-        .read(fuelProvider.notifier)
-        .calculateConsumption(carId);
+    final fuelAsync = ref.watch(fuelProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text("Tankování")),
 
-      body: Column(
-        children: [
-          if (fuels.length >= 2)
-            Card(
-              margin: const EdgeInsets.all(12),
+      body: fuelAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
 
-              child: ListTile(
-                leading: const Icon(Icons.speed),
+        error: (error, stack) => Center(child: Text("Chyba: $error")),
 
-                title: const Text("Průměrná spotřeba"),
+        data: (allFuels) {
+          final fuels = allFuels
+              .where((fuel) => fuel.carId == int.parse(carId))
+              .toList();
 
-                subtitle: Text("${consumption.toStringAsFixed(1)} l / 100 km"),
+          return Column(
+            children: [
+              if (fuels.length >= 2)
+                FutureBuilder<double>(
+                  future: ref
+                      .read(fuelProvider.notifier)
+                      .calculateConsumption(int.parse(carId)),
+
+                  builder: (context, snapshot) {
+                    final consumption = snapshot.data ?? 0;
+
+                    return Card(
+                      margin: const EdgeInsets.all(12),
+
+                      child: ListTile(
+                        leading: const Icon(Icons.speed),
+
+                        title: const Text("Průměrná spotřeba"),
+
+                        subtitle: Text(
+                          "${consumption.toStringAsFixed(1)} l / 100 km",
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+              Expanded(
+                child: fuels.isEmpty
+                    ? const Center(child: Text("Zatím žádné tankování"))
+                    : ListView.builder(
+                        itemCount: fuels.length,
+
+                        itemBuilder: (context, index) {
+                          final fuel = fuels[index];
+
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+
+                            child: ListTile(
+                              leading: const Icon(Icons.local_gas_station),
+
+                              title: Text("${fuel.liters} litrů"),
+
+                              subtitle: Text(
+                                "${fuel.kilometers} km\n"
+                                "${fuel.date.day}."
+                                "${fuel.date.month}."
+                                "${fuel.date.year}",
+                              ),
+
+                              trailing: Text(
+                                "${fuel.price.toStringAsFixed(0)} Kč",
+                              ),
+                            ),
+                          );
+                        },
+                      ),
               ),
-            ),
-
-          Expanded(
-            child: fuels.isEmpty
-                ? const Center(child: Text("Zatím žádné tankování"))
-                : ListView.builder(
-                    itemCount: fuels.length,
-
-                    itemBuilder: (context, index) {
-                      final fuel = fuels[index];
-
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-
-                        child: ListTile(
-                          leading: const Icon(Icons.local_gas_station),
-
-                          title: Text("${fuel.liters} litrů"),
-
-                          subtitle: Text(
-                            "${fuel.kilometres} km\n"
-                            "${fuel.date.day}.${fuel.date.month}.${fuel.date.year}",
-                          ),
-
-                          trailing: Text("${fuel.price.toStringAsFixed(0)} Kč"),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
 
       floatingActionButton: FloatingActionButton(

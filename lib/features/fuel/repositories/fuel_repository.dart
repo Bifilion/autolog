@@ -1,21 +1,36 @@
+import 'package:isar/isar.dart';
 import 'package:autolog/features/fuel/models/fuel_record.dart';
 
 class FuelRepository {
-  final List<FuelRecord> _fuelRecords = [];
+  final Isar isar;
 
-  List<FuelRecord> getAll() {
-    return List.unmodifiable(_fuelRecords);
+  FuelRepository(this.isar);
+
+  Future<List<FuelRecord>> getAll() async {
+    return await isar.fuelRecords.where().findAll();
   }
 
-  void add(FuelRecord fuel) {
-    _fuelRecords.add(fuel);
+  Future<void> add(FuelRecord fuel) async {
+    await isar.writeTxn(() async {
+      await isar.fuelRecords.put(fuel);
+    });
   }
 
-  void remove(String id) {
-    _fuelRecords.removeWhere((fuel) => fuel.id == id);
+  Future<void> remove(int id) async {
+    await isar.writeTxn(() async {
+      await isar.fuelRecords.delete(id);
+    });
   }
 
-  List<FuelRecord> getByCar(String carId) {
-    return _fuelRecords.where((fuel) => fuel.carId == carId).toList();
+  Future<List<FuelRecord>> getByCar(int carId) async {
+    return await isar.fuelRecords.filter().carIdEqualTo(carId).findAll();
+  }
+
+  Future<FuelRecord?> getLatestByCar(int carId) async {
+    return await isar.fuelRecords
+        .filter()
+        .carIdEqualTo(carId)
+        .sortByDateDesc()
+        .findFirst();
   }
 }

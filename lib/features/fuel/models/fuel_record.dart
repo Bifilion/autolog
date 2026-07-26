@@ -1,28 +1,36 @@
+import 'package:isar/isar.dart';
+
+part 'fuel_record.g.dart';
+
+@collection
 class FuelRecord {
-  final String id;
+  Id id = Isar.autoIncrement;
 
-  final String carId;
+  /// ID auta
+  late int carId;
 
-  final DateTime date;
+  /// Datum tankování
+  late DateTime date;
 
-  final int kilometres;
+  /// Stav tachometru
+  late int kilometers;
 
-  final double liters;
+  /// Počet litrů
+  late double liters;
 
-  final double price;
+  /// Celková cena
+  late double price;
+
+  /// Poznámka
+  String? note;
 
   FuelRecord({
-    required this.id,
-
     required this.carId,
-
     required this.date,
-
-    required this.kilometres,
-
+    required this.kilometers,
     required this.liters,
-
     required this.price,
+    this.note,
   });
 
   double get pricePerLiter {

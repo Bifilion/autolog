@@ -3,31 +3,56 @@ import 'package:autolog/features/service/models/service_record.dart';
 import 'package:autolog/features/service/repositories/service_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ServiceNotifier extends StateNotifier<List<ServiceRecord>> {
-  final ServiceRepository repository;
+class ServiceNotifier extends AsyncNotifier<List<ServiceRecord>> {
+  ServiceRepository? _repository;
 
-  ServiceNotifier(this.repository) : super(repository.getAll());
+  Future<ServiceRepository> get repository async {
+    if (_repository != null) {
+      return _repository!;
+    }
 
-  void addService(ServiceRecord service) {
-    repository.add(service);
+    _repository = await ref.read(serviceRepositoryProvider.future);
 
-    state = repository.getAll();
+    return _repository!;
   }
 
-  void removeService(ServiceRecord service) {
-    repository.remove(service.id);
+  @override
+  Future<List<ServiceRecord>> build() async {
+    final repo = await repository;
 
-    state = repository.getAll();
+    return await repo.getAll();
   }
 
-  List<ServiceRecord> getByCar(String carId) {
-    return state.where((service) => service.carId == carId).toList();
+  Future<void> addService(ServiceRecord service) async {
+    final repo = await repository;
+
+    await repo.add(service);
+
+    state = AsyncData(await repo.getAll());
+  }
+
+  Future<void> removeService(ServiceRecord service) async {
+    final repo = await repository;
+
+    await repo.remove(service.id);
+
+    state = AsyncData(await repo.getAll());
+  }
+
+  Future<List<ServiceRecord>> getByCar(int carId) async {
+    final repo = await repository;
+
+    return await repo.getByCar(carId);
+  }
+
+  Future<ServiceRecord?> getLatestByCar(int carId) async {
+    final repo = await repository;
+
+    return await repo.getLatestByCar(carId);
   }
 }
 
 final serviceProvider =
-    StateNotifierProvider<ServiceNotifier, List<ServiceRecord>>((ref) {
-      final repository = ref.read(serviceRepositoryProvider);
-
-      return ServiceNotifier(repository);
-    });
+    AsyncNotifierProvider<ServiceNotifier, List<ServiceRecord>>(
+      ServiceNotifier.new,
+    );

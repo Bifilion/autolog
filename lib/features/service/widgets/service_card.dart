@@ -1,4 +1,5 @@
 import 'package:autolog/features/service/models/service_record.dart';
+import 'package:autolog/features/service/models/service_type.dart';
 import 'package:flutter/material.dart';
 
 class ServiceCard extends StatelessWidget {
@@ -20,7 +21,7 @@ class ServiceCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  service.title,
+                  service.title ?? service.type.label,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

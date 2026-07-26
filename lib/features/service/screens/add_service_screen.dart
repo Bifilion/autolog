@@ -1,4 +1,5 @@
 import 'package:autolog/features/service/models/service_record.dart';
+import 'package:autolog/features/service/models/service_type.dart';
 import 'package:autolog/features/service/providers/service_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,7 +25,7 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
 
   DateTime selectedDate = DateTime.now();
 
-  void saveService() {
+  Future<void> saveService() async {
     if (titleController.text.isEmpty ||
         kilometresController.text.isEmpty ||
         priceController.text.isEmpty) {
@@ -36,24 +37,27 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
     }
 
     final service = ServiceRecord(
-      id: DateTime.now().toString(),
-
-      carId: widget.carId,
+      carId: int.parse(widget.carId),
 
       date: selectedDate,
 
       kilometers: int.tryParse(kilometresController.text) ?? 0,
+
+      type: ServiceType.custom,
 
       title: titleController.text,
 
       price: double.tryParse(priceController.text) ?? 0,
 
       note: noteController.text,
+
+      reminderEnabled: false,
     );
+    await ref.read(serviceProvider.notifier).addService(service);
 
-    ref.read(serviceProvider.notifier).addService(service);
-
-    context.pop();
+    if (mounted) {
+      context.pop();
+    }
   }
 
   @override

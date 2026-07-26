@@ -3,34 +3,33 @@ import 'package:autolog/features/cars/models/car.dart';
 import 'package:autolog/features/cars/repositories/car_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CarNotifier extends StateNotifier<List<Car>> {
-  final CarRepository repository;
+class CarNotifier extends AsyncNotifier<List<Car>> {
+  late CarRepository repository;
 
-  CarNotifier(this.repository) : super(repository.getAll());
+  @override
+  Future<List<Car>> build() async {
+    repository = await ref.watch(carRepositoryProvider.future);
 
-  Car? getCarById(String id) {
-    try {
-      return state.firstWhere((car) => car.id == id);
-    } catch (e) {
-      return null;
-    }
+    return await repository.getAll();
   }
 
-  void addCar(Car car) {
-    repository.add(car);
+  Future<void> addCar(Car car) async {
+    await repository.add(car);
 
-    state = repository.getAll();
+    state = AsyncData(await repository.getAll());
   }
 
-  void removeCar(Car car) {
-    repository.remove(car.id);
+  Future<void> removeCar(Car car) async {
+    await repository.remove(car.id);
 
-    state = repository.getAll();
+    state = AsyncData(await repository.getAll());
+  }
+
+  Future<Car?> getCarById(int id) async {
+    return await repository.getById(id);
   }
 }
 
-final carProvider = StateNotifierProvider<CarNotifier, List<Car>>((ref) {
-  final repository = ref.read(carRepositoryProvider);
-
-  return CarNotifier(repository);
-});
+final carProvider = AsyncNotifierProvider<CarNotifier, List<Car>>(
+  CarNotifier.new,
+);

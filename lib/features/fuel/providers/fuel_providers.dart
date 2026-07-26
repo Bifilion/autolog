@@ -3,47 +3,78 @@ import 'package:autolog/features/fuel/models/fuel_record.dart';
 import 'package:autolog/features/fuel/repositories/fuel_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FuelNotifier extends StateNotifier<List<FuelRecord>> {
-  final FuelRepository repository;
+class FuelNotifier extends AsyncNotifier<List<FuelRecord>> {
+  FuelRepository? _repository;
 
-  FuelNotifier(this.repository) : super(repository.getAll());
+  Future<FuelRepository> get repository async {
+    if (_repository != null) {
+      return _repository!;
+    }
 
-  void addFuel(FuelRecord fuel) {
-    repository.add(fuel);
+    _repository = await ref.read(fuelRepositoryProvider.future);
 
-    state = repository.getAll();
+    return _repository!;
   }
 
-  void removeFuel(FuelRecord fuel) {
-    repository.remove(fuel.id);
+  @override
+  Future<List<FuelRecord>> build() async {
+    final repo = await repository;
 
-    state = repository.getAll();
+    return await repo.getAll();
   }
 
-  double calculateConsumption(String carId) {
-    final carFuel = state.where((fuel) => fuel.carId == carId).toList();
+  Future<void> addFuel(FuelRecord fuel) async {
+    final repo = await repository;
+
+    await repo.add(fuel);
+
+    state = AsyncData(await repo.getAll());
+  }
+
+  Future<void> removeFuel(FuelRecord fuel) async {
+    final repo = await repository;
+
+    await repo.remove(fuel.id);
+
+    state = AsyncData(await repo.getAll());
+  }
+
+  Future<List<FuelRecord>> getByCar(int carId) async {
+    final repo = await repository;
+
+    return await repo.getByCar(carId);
+  }
+
+  Future<FuelRecord?> getLatestByCar(int carId) async {
+    final repo = await repository;
+
+    return await repo.getLatestByCar(carId);
+  }
+
+  Future<double> calculateConsumption(int carId) async {
+    final repo = await repository;
+
+    final carFuel = await repo.getByCar(carId);
 
     if (carFuel.length < 2) {
       return 0;
     }
 
-    carFuel.sort((a, b) => a.kilometres.compareTo(b.kilometres));
+    carFuel.sort((a, b) => a.kilometers.compareTo(b.kilometers));
 
     final first = carFuel.first;
     final last = carFuel.last;
-    final distance = last.kilometres - first.kilometres;
+
+    final distance = last.kilometers - first.kilometers;
 
     if (distance <= 0) {
       return 0;
     }
+
     return (last.liters / distance) * 100;
   }
 }
 
-final fuelProvider = StateNotifierProvider<FuelNotifier, List<FuelRecord>>((
-  ref,
-) {
-  final repository = ref.read(fuelRepositoryProvider);
-
-  return FuelNotifier(repository);
-});
+final fuelProvider = AsyncNotifierProvider<FuelNotifier, List<FuelRecord>>(
+  FuelNotifier.new,
+);

@@ -14,7 +14,7 @@ class AddFuelScreen extends ConsumerStatefulWidget {
 }
 
 class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
-  final kilometresController = TextEditingController();
+  final kilometersController = TextEditingController();
 
   final litersController = TextEditingController();
 
@@ -22,8 +22,8 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
 
   DateTime selectedDate = DateTime.now();
 
-  void saveFuel() {
-    if (kilometresController.text.isEmpty ||
+  Future<void> saveFuel() async {
+    if (kilometersController.text.isEmpty ||
         litersController.text.isEmpty ||
         priceController.text.isEmpty) {
       ScaffoldMessenger.of(
@@ -34,22 +34,22 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
     }
 
     final fuel = FuelRecord(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-
-      carId: widget.carId,
+      carId: int.parse(widget.carId),
 
       date: selectedDate,
 
-      kilometres: int.tryParse(kilometresController.text) ?? 0,
+      kilometers: int.tryParse(kilometersController.text) ?? 0,
 
       liters: double.tryParse(litersController.text) ?? 0,
 
       price: double.tryParse(priceController.text) ?? 0,
     );
 
-    ref.read(fuelProvider.notifier).addFuel(fuel);
+    await ref.read(fuelProvider.notifier).addFuel(fuel);
 
-    context.pop();
+    if (mounted) {
+      context.pop();
+    }
   }
 
   @override
@@ -63,7 +63,7 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
         child: Column(
           children: [
             TextField(
-              controller: kilometresController,
+              controller: kilometersController,
 
               keyboardType: TextInputType.number,
 

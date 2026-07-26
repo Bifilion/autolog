@@ -1,25 +1,28 @@
 import 'package:autolog/features/cars/models/car.dart';
+import 'package:isar/isar.dart';
 
 class CarRepository {
-  final List<Car> _cars = [];
+  final Isar isar;
 
-  List<Car> getAll() {
-    return List.unmodifiable(_cars);
+  CarRepository(this.isar);
+
+  Future<List<Car>> getAll() async {
+    return await isar.cars.where().findAll();
   }
 
-  void add(Car car) {
-    _cars.add(car);
+  Future<void> add(Car car) async {
+    await isar.writeTxn(() async {
+      await isar.cars.put(car);
+    });
   }
 
-  void remove(String id) {
-    _cars.removeWhere((car) => car.id == id);
+  Future<void> remove(int id) async {
+    await isar.writeTxn(() async {
+      await isar.cars.delete(id);
+    });
   }
 
-  Car? getById(String id) {
-    try {
-      return _cars.firstWhere((car) => car.id == id);
-    } catch (_) {
-      return null;
-    }
+  Future<Car?> getById(int id) async {
+    return await isar.cars.get(id);
   }
 }

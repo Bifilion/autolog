@@ -1,21 +1,37 @@
-import 'package:autolog/features/service/models/service_record.dart';
+import 'package:isar/isar.dart';
+
+import '../models/service_record.dart';
 
 class ServiceRepository {
-  final List<ServiceRecord> _services = [];
+  final Isar isar;
 
-  List<ServiceRecord> getAll() {
-    return List.unmodifiable(_services);
+  ServiceRepository(this.isar);
+
+  Future<List<ServiceRecord>> getAll() async {
+    return await isar.serviceRecords.where().findAll();
   }
 
-  void add(ServiceRecord service) {
-    _services.add(service);
+  Future<void> add(ServiceRecord service) async {
+    await isar.writeTxn(() async {
+      await isar.serviceRecords.put(service);
+    });
   }
 
-  void remove(String id) {
-    _services.removeWhere((service) => service.id == id);
+  Future<void> remove(int id) async {
+    await isar.writeTxn(() async {
+      await isar.serviceRecords.delete(id);
+    });
   }
 
-  List<ServiceRecord> getByCar(String carId) {
-    return _services.where((service) => service.carId == carId).toList();
+  Future<List<ServiceRecord>> getByCar(int carId) async {
+    return await isar.serviceRecords.filter().carIdEqualTo(carId).findAll();
+  }
+
+  Future<ServiceRecord?> getLatestByCar(int carId) async {
+    return await isar.serviceRecords
+        .filter()
+        .carIdEqualTo(carId)
+        .sortByDateDesc()
+        .findFirst();
   }
 }

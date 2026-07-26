@@ -17,18 +17,19 @@ class _AddCarScreenState extends ConsumerState<AddCarScreen> {
   final yearController = TextEditingController();
   final kilometersController = TextEditingController();
 
-  void saveCar() {
+  Future<void> saveCar() async {
     final car = Car(
-      id: DateTime.now().toString(),
       brand: brandController.text,
       model: modelController.text,
       year: int.parse(yearController.text),
       kilometers: int.parse(kilometersController.text),
     );
 
-    ref.read(carProvider.notifier).addCar(car);
+    await ref.read(carProvider.notifier).addCar(car);
 
-    context.pop();
+    if (mounted) {
+      context.pop();
+    }
   }
 
   @override
