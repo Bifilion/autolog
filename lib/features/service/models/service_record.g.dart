@@ -27,43 +27,48 @@ const ServiceRecordSchema = CollectionSchema(
       name: r'date',
       type: IsarType.dateTime,
     ),
-    r'intervalKilometers': PropertySchema(
+    r'displayName': PropertySchema(
       id: 2,
+      name: r'displayName',
+      type: IsarType.string,
+    ),
+    r'intervalKilometers': PropertySchema(
+      id: 3,
       name: r'intervalKilometers',
       type: IsarType.long,
     ),
     r'intervalMonths': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'intervalMonths',
       type: IsarType.long,
     ),
     r'kilometers': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'kilometers',
       type: IsarType.long,
     ),
     r'note': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'note',
       type: IsarType.string,
     ),
     r'price': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'price',
       type: IsarType.double,
     ),
     r'reminderEnabled': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'reminderEnabled',
       type: IsarType.bool,
     ),
     r'title': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'title',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'type',
       type: IsarType.byte,
       enumMap: _ServiceRecordtypeEnumValueMap,
@@ -89,6 +94,7 @@ int _serviceRecordEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  bytesCount += 3 + object.displayName.length * 3;
   bytesCount += 3 + object.note.length * 3;
   {
     final value = object.title;
@@ -107,14 +113,15 @@ void _serviceRecordSerialize(
 ) {
   writer.writeLong(offsets[0], object.carId);
   writer.writeDateTime(offsets[1], object.date);
-  writer.writeLong(offsets[2], object.intervalKilometers);
-  writer.writeLong(offsets[3], object.intervalMonths);
-  writer.writeLong(offsets[4], object.kilometers);
-  writer.writeString(offsets[5], object.note);
-  writer.writeDouble(offsets[6], object.price);
-  writer.writeBool(offsets[7], object.reminderEnabled);
-  writer.writeString(offsets[8], object.title);
-  writer.writeByte(offsets[9], object.type.index);
+  writer.writeString(offsets[2], object.displayName);
+  writer.writeLong(offsets[3], object.intervalKilometers);
+  writer.writeLong(offsets[4], object.intervalMonths);
+  writer.writeLong(offsets[5], object.kilometers);
+  writer.writeString(offsets[6], object.note);
+  writer.writeDouble(offsets[7], object.price);
+  writer.writeBool(offsets[8], object.reminderEnabled);
+  writer.writeString(offsets[9], object.title);
+  writer.writeByte(offsets[10], object.type.index);
 }
 
 ServiceRecord _serviceRecordDeserialize(
@@ -126,14 +133,14 @@ ServiceRecord _serviceRecordDeserialize(
   final object = ServiceRecord(
     carId: reader.readLong(offsets[0]),
     date: reader.readDateTime(offsets[1]),
-    intervalKilometers: reader.readLongOrNull(offsets[2]),
-    intervalMonths: reader.readLongOrNull(offsets[3]),
-    kilometers: reader.readLong(offsets[4]),
-    note: reader.readString(offsets[5]),
-    price: reader.readDouble(offsets[6]),
-    reminderEnabled: reader.readBool(offsets[7]),
-    title: reader.readStringOrNull(offsets[8]),
-    type: _ServiceRecordtypeValueEnumMap[reader.readByteOrNull(offsets[9])] ??
+    intervalKilometers: reader.readLongOrNull(offsets[3]),
+    intervalMonths: reader.readLongOrNull(offsets[4]),
+    kilometers: reader.readLong(offsets[5]),
+    note: reader.readString(offsets[6]),
+    price: reader.readDouble(offsets[7]),
+    reminderEnabled: reader.readBool(offsets[8]),
+    title: reader.readStringOrNull(offsets[9]),
+    type: _ServiceRecordtypeValueEnumMap[reader.readByteOrNull(offsets[10])] ??
         ServiceType.oil,
   );
   object.id = id;
@@ -152,20 +159,22 @@ P _serviceRecordDeserializeProp<P>(
     case 1:
       return (reader.readDateTime(offset)) as P;
     case 2:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 3:
       return (reader.readLongOrNull(offset)) as P;
     case 4:
-      return (reader.readLong(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 6:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readBool(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 8:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 9:
+      return (reader.readStringOrNull(offset)) as P;
+    case 10:
       return (_ServiceRecordtypeValueEnumMap[reader.readByteOrNull(offset)] ??
           ServiceType.oil) as P;
     default:
@@ -411,6 +420,142 @@ extension ServiceRecordQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterFilterCondition>
+      displayNameEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterFilterCondition>
+      displayNameGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterFilterCondition>
+      displayNameLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterFilterCondition>
+      displayNameBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'displayName',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterFilterCondition>
+      displayNameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterFilterCondition>
+      displayNameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterFilterCondition>
+      displayNameContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'displayName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterFilterCondition>
+      displayNameMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'displayName',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterFilterCondition>
+      displayNameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'displayName',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterFilterCondition>
+      displayNameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'displayName',
+        value: '',
       ));
     });
   }
@@ -1126,6 +1271,19 @@ extension ServiceRecordQuerySortBy
     });
   }
 
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterSortBy> sortByDisplayName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'displayName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterSortBy>
+      sortByDisplayNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'displayName', Sort.desc);
+    });
+  }
+
   QueryBuilder<ServiceRecord, ServiceRecord, QAfterSortBy>
       sortByIntervalKilometers() {
     return QueryBuilder.apply(this, (query) {
@@ -1253,6 +1411,19 @@ extension ServiceRecordQuerySortThenBy
   QueryBuilder<ServiceRecord, ServiceRecord, QAfterSortBy> thenByDateDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'date', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterSortBy> thenByDisplayName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'displayName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ServiceRecord, ServiceRecord, QAfterSortBy>
+      thenByDisplayNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'displayName', Sort.desc);
     });
   }
 
@@ -1386,6 +1557,13 @@ extension ServiceRecordQueryWhereDistinct
     });
   }
 
+  QueryBuilder<ServiceRecord, ServiceRecord, QDistinct> distinctByDisplayName(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'displayName', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<ServiceRecord, ServiceRecord, QDistinct>
       distinctByIntervalKilometers() {
     return QueryBuilder.apply(this, (query) {
@@ -1457,6 +1635,12 @@ extension ServiceRecordQueryProperty
   QueryBuilder<ServiceRecord, DateTime, QQueryOperations> dateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'date');
+    });
+  }
+
+  QueryBuilder<ServiceRecord, String, QQueryOperations> displayNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'displayName');
     });
   }
 

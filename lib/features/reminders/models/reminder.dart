@@ -1,70 +1,120 @@
+import 'package:autolog/features/reminders/models/reminder_type.dart';
+import 'package:flutter/material.dart';
+import 'package:isar/isar.dart';
+
+part 'reminder.g.dart';
+
+@collection
 class Reminder {
-  final String id;
+  Id id = Isar.autoIncrement;
 
-  final String carId;
+  late int carId;
 
-  final String title;
+  @enumerated
+  late ReminderType type;
 
-  // interval podle kilometrů
-  final int? intervalKm;
+  /// Interval podle kilometrů
+  int? intervalKilometers;
 
-  // interval podle času
-  final Duration? intervalTime;
+  /// Interval podle času ve dnech
+  int? intervalDays;
 
-  // stav při posledním servisu
-  final int? lastKilometres;
+  DateTime? lastDate;
 
-  final DateTime lastDate;
+  String? title;
+
+  int? lastKilometers;
+
+  late bool enabled;
 
   Reminder({
-    required this.id,
-
     required this.carId,
-
-    required this.title,
-
-    this.intervalKm,
-
-    this.intervalTime,
-
-    this.lastKilometres,
-
-    required this.lastDate,
+    required this.type,
+    this.intervalKilometers,
+    this.intervalDays,
+    this.lastDate,
+    this.title,
+    this.lastKilometers,
+    this.enabled = true,
   });
 
-  int? nextMileage() {
-    if (intervalKm == null || lastKilometres == null) {
-      return null;
-    }
-
-    return lastKilometres! + intervalKm!;
-  }
-
-  DateTime? nextDate() {
-    if (intervalTime == null) {
-      return null;
-    }
-
-    return lastDate.add(intervalTime!);
-  }
-
-  bool isKmDue(int currentMileage) {
-    final next = nextMileage();
-
-    if (next == null) {
+  bool isKmDue(int currentKilometers) {
+    if (intervalKilometers == null || lastKilometers == null) {
       return false;
     }
 
-    return currentMileage >= next;
+    return currentKilometers >= lastKilometers! + intervalKilometers!;
   }
 
   bool isTimeDue(DateTime today) {
-    final next = nextDate();
-
-    if (next == null) {
+    if (intervalDays == null || lastDate == null) {
       return false;
     }
 
-    return today.isAfter(next);
+    final difference = today.difference(lastDate!).inDays;
+
+    return difference >= intervalDays!;
+  }
+
+  String kmStatus(int currentKilometers) {
+    if (intervalKilometers == null || lastKilometers == null) {
+      return "";
+    }
+
+    final nextKm = lastKilometers! + intervalKilometers!;
+
+    final remaining = nextKm - currentKilometers;
+
+    if (remaining <= 0) {
+      return "⚠️ Překročeno o ${remaining.abs()} km";
+    }
+
+    return "Zbývá $remaining km";
+  }
+
+  String timeStatus(DateTime today) {
+    if (intervalDays == null || lastDate == null) {
+      return "";
+    }
+
+    final nextDate = lastDate!.add(Duration(days: intervalDays!));
+
+    final remaining = nextDate.difference(today).inDays;
+
+    if (remaining <= 0) {
+      return "⚠️ Po termínu o ${remaining.abs()} dní";
+    }
+
+    return "Zbývá $remaining dní";
+  }
+
+  Color statusColor(int currentKilometers, DateTime today) {
+    bool overdue = isKmDue(currentKilometers) || isTimeDue(today);
+
+    if (overdue) {
+      return Colors.red;
+    }
+
+    if (intervalKilometers != null && lastKilometers != null) {
+      final nextKm = lastKilometers! + intervalKilometers!;
+
+      final remaining = nextKm - currentKilometers;
+
+      if (remaining < intervalKilometers! * 0.2) {
+        return Colors.orange;
+      }
+    }
+
+    if (intervalDays != null && lastDate != null) {
+      final nextDate = lastDate!.add(Duration(days: intervalDays!));
+
+      final remainingDays = nextDate.difference(today).inDays;
+
+      if (remainingDays < intervalDays! * 0.2) {
+        return Colors.orange;
+      }
+    }
+
+    return Colors.green;
   }
 }

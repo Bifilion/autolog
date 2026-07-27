@@ -1,3 +1,5 @@
+import 'package:autolog/features/reminders/models/reminder_type.dart';
+
 enum ServiceType {
   oil,
   airFilter,
@@ -49,6 +51,55 @@ extension ServiceTypeExtension on ServiceType {
         return "Roční servis";
       case ServiceType.custom:
         return "Vlastní servis";
+    }
+  }
+
+  ReminderType toReminderType() {
+    switch (this) {
+      case ServiceType.oil:
+        return ReminderType.oil;
+
+      case ServiceType.airFilter:
+        return ReminderType.airFilter;
+
+      case ServiceType.cabinFilter:
+        return ReminderType.cabinFilter;
+
+      case ServiceType.fuelFilter:
+        return ReminderType.fuelFilter;
+
+      case ServiceType.brakes:
+        return ReminderType.brakes;
+
+      case ServiceType.brakeFluid:
+        return ReminderType.brakeFluid;
+
+      case ServiceType.coolant:
+        return ReminderType.coolant;
+
+      case ServiceType.timingBelt:
+        return ReminderType.timingBelt;
+
+      case ServiceType.tires:
+        return ReminderType.tires;
+
+      case ServiceType.battery:
+        return ReminderType.battery;
+
+      case ServiceType.inspection:
+        return ReminderType.inspection;
+
+      case ServiceType.insurance:
+        return ReminderType.insurance;
+
+      case ServiceType.custom:
+        return ReminderType.custom;
+
+      case ServiceType.transmissionOil:
+        return ReminderType.custom;
+
+      case ServiceType.annualService:
+        return ReminderType.custom;
     }
   }
 }

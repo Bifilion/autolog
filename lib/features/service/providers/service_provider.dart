@@ -1,6 +1,8 @@
 import 'package:autolog/core/providers/repository_providers.dart';
 import 'package:autolog/features/expenses/providers/expense_provider.dart';
 import 'package:autolog/features/service/models/service_record.dart';
+import 'package:autolog/features/service/providers/service_stats_provider.dart'
+    hide totalServiceCostProvider;
 import 'package:autolog/features/service/repositories/service_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -32,6 +34,7 @@ class ServiceNotifier extends AsyncNotifier<List<ServiceRecord>> {
     state = AsyncData(await repo.getAll());
 
     ref.invalidate(totalServiceCostProvider(service.carId));
+    ref.invalidate(latestServiceProvider(service.carId));
   }
 
   Future<void> removeService(ServiceRecord service) async {

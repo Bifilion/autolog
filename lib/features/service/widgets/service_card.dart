@@ -21,10 +21,9 @@ class ServiceCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  service.title ?? service.type.label,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  service.type == ServiceType.custom
+                      ? service.title ?? "Vlastní servis"
+                      : service.displayName,
                 ),
 
                 Text(

@@ -1,21 +1,41 @@
+import 'package:autolog/core/database/isar_database.dart';
 import 'package:autolog/features/reminders/models/reminder.dart';
+import 'package:isar/isar.dart';
 
 class ReminderRepository {
-  final List<Reminder> _reminders = [];
+  Future<List<Reminder>> getAll() async {
+    final isar = await IsarDatabase.getInstance();
 
-  List<Reminder> getAll() {
-    return List.unmodifiable(_reminders);
+    return await isar.reminders.where().findAll();
   }
 
-  void add(Reminder reminder) {
-    _reminders.add(reminder);
+  Future<void> add(Reminder reminder) async {
+    final isar = await IsarDatabase.getInstance();
+
+    await isar.writeTxn(() async {
+      await isar.reminders.put(reminder);
+    });
   }
 
-  void remove(String id) {
-    _reminders.removeWhere((reminder) => reminder.id == id);
+  Future<void> update(Reminder reminder) async {
+    final isar = await IsarDatabase.getInstance();
+
+    await isar.writeTxn(() async {
+      await isar.reminders.put(reminder);
+    });
   }
 
-  List<Reminder> getByCar(String carId) {
-    return _reminders.where((reminder) => reminder.carId == carId).toList();
+  Future<void> remove(int id) async {
+    final isar = await IsarDatabase.getInstance();
+
+    await isar.writeTxn(() async {
+      await isar.reminders.delete(id);
+    });
+  }
+
+  Future<List<Reminder>> getByCar(int carId) async {
+    final isar = await IsarDatabase.getInstance();
+
+    return await isar.reminders.filter().carIdEqualTo(carId).findAll();
   }
 }

@@ -1,9 +1,11 @@
 import 'package:autolog/features/cars/providers/car_provider.dart';
-import 'package:autolog/features/cars/widgets/dashboard_card.dart';
+import 'package:autolog/features/cars/widgets/dashboard_header.dart';
+import 'package:autolog/features/cars/widgets/last_fuel_card.dart';
+import 'package:autolog/features/cars/widgets/last_service_card.dart';
+import 'package:autolog/features/cars/widgets/reminder_card.dart';
+import 'package:autolog/features/cars/widgets/statistics_card.dart';
 import 'package:autolog/features/expenses/providers/expense_provider.dart';
-import 'package:autolog/features/service/models/service_type.dart';
-import 'package:autolog/features/service/providers/service_stats_provider.dart'
-    hide totalServiceCostProvider;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,13 +21,9 @@ class CarDashboardScreen extends ConsumerWidget {
 
     final carFuture = ref.read(carProvider.notifier).getCarById(carIdInt);
 
-    final fuelCost = ref.watch(totalFuelCostProvider(int.parse(carId)));
+    final fuelCost = ref.watch(totalFuelCostProvider(carIdInt));
 
-    final serviceCost = ref.watch(totalServiceCostProvider(int.parse(carId)));
-
-    // final totalCost = (fuelCost.value ?? 0) + (serviceCost.value ?? 0);
-
-    final latestService = ref.watch(latestServiceProvider(int.parse(carId)));
+    final serviceCost = ref.watch(totalServiceCostProvider(carIdInt));
 
     return FutureBuilder(
       future: carFuture,
@@ -53,14 +51,8 @@ class CarDashboardScreen extends ConsumerWidget {
             padding: EdgeInsets.all(16),
             child: ListView(
               children: [
-                Text(
-                  "${car.year}",
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                Text(
-                  "Nájezd: ${car.kilometers} km",
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+                DashboardHeader(car: car),
+
                 const SizedBox(height: 20),
 
                 Card(
@@ -89,33 +81,25 @@ class CarDashboardScreen extends ConsumerWidget {
                     },
                   ),
                 ),
+                LastFuelCard(carId: carIdInt),
 
-                DashboardCard(
-                  icon: Icons.notifications,
-                  title: "Připomínky",
-                  value: "Žádné záznamy",
-                ),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.notifications),
+                    title: const Text("Připomínky"),
 
-                DashboardCard(
-                  icon: Icons.build,
-                  title: "Poslední servis",
-                  value: latestService.when(
-                    data: (service) =>
-                        service == null ? "Žádný záznam" : service.type.label,
-
-                    loading: () => "Načítám...",
-
-                    error: (_, _) => "Chyba načtení",
+                    onTap: () {
+                      context.push('/reminder/$carId/add');
+                    },
                   ),
                 ),
+                ReminderCard(carId: int.parse(carId)),
 
-                DashboardCard(
-                  icon: Icons.attach_money,
-                  title: "Náklady",
-                  value:
-                      "Palivo: ${(fuelCost.value ?? 0).toStringAsFixed(0)} Kč\n"
-                      "Servis: ${(serviceCost.value ?? 0).toStringAsFixed(0)} Kč\n"
-                      "Celkem: ${((fuelCost.value ?? 0) + (serviceCost.value ?? 0)).toStringAsFixed(0)} Kč",
+                LastServiceCard(carId: carIdInt),
+
+                StatisticsCard(
+                  fuelCost: fuelCost.value ?? 0,
+                  serviceCost: serviceCost.value ?? 0,
                 ),
               ],
             ),

@@ -33,3 +33,9 @@ class CarNotifier extends AsyncNotifier<List<Car>> {
 final carProvider = AsyncNotifierProvider<CarNotifier, List<Car>>(
   CarNotifier.new,
 );
+
+final carByIdProvider = FutureProvider.family<Car?, int>((ref, id) async {
+  ref.watch(carProvider);
+
+  return await ref.read(carProvider.notifier).getCarById(id);
+});

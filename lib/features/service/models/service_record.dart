@@ -49,4 +49,12 @@ class ServiceRecord {
     this.intervalMonths,
     required this.reminderEnabled,
   });
+
+  String get displayName {
+    if (type == ServiceType.custom && title != null && title!.isNotEmpty) {
+      return title!;
+    }
+
+    return type.label;
+  }
 }

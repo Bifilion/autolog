@@ -1,3 +1,5 @@
+import 'package:autolog/features/reminders/models/reminder.dart';
+import 'package:autolog/features/reminders/providers/reminder_provider.dart';
 import 'package:autolog/features/service/models/service_record.dart';
 import 'package:autolog/features/service/models/service_type.dart';
 import 'package:autolog/features/service/providers/service_provider.dart';
@@ -23,12 +25,15 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
 
   final noteController = TextEditingController();
 
+  ServiceType selectedType = ServiceType.oil;
+
   DateTime selectedDate = DateTime.now();
+  bool reminderEnabled = true;
 
   Future<void> saveService() async {
-    if (titleController.text.isEmpty ||
-        kilometresController.text.isEmpty ||
-        priceController.text.isEmpty) {
+    if (kilometresController.text.isEmpty ||
+        priceController.text.isEmpty ||
+        (selectedType == ServiceType.custom && titleController.text.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Vyplň všechna povinná pole")),
       );
@@ -43,7 +48,7 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
 
       kilometers: int.tryParse(kilometresController.text) ?? 0,
 
-      type: ServiceType.custom,
+      type: selectedType,
 
       title: titleController.text,
 
@@ -51,9 +56,29 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
 
       note: noteController.text,
 
-      reminderEnabled: false,
+      reminderEnabled: reminderEnabled,
     );
     await ref.read(serviceProvider.notifier).addService(service);
+
+    if (service.reminderEnabled) {
+      final reminder = Reminder(
+        carId: service.carId,
+
+        title: service.displayName,
+
+        type: service.type.toReminderType(),
+
+        intervalKilometers: 15000,
+
+        lastKilometers: service.kilometers,
+
+        lastDate: service.date,
+
+        enabled: true,
+      );
+
+      ref.read(reminderProvider.notifier).addReminder(reminder);
+    }
 
     if (mounted) {
       context.pop();
@@ -70,11 +95,31 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
 
         child: Column(
           children: [
-            TextField(
-              controller: titleController,
+            DropdownButtonFormField<ServiceType>(
+              value: selectedType,
 
-              decoration: const InputDecoration(labelText: "Název"),
+              decoration: const InputDecoration(labelText: "Typ servisu"),
+
+              items: ServiceType.values.map((type) {
+                return DropdownMenuItem(value: type, child: Text(type.label));
+              }).toList(),
+
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    selectedType = value;
+                  });
+                }
+              },
             ),
+            if (selectedType == ServiceType.custom)
+              TextField(
+                controller: titleController,
+
+                decoration: const InputDecoration(
+                  labelText: "Název vlastního servisu",
+                ),
+              ),
 
             TextField(
               controller: kilometresController,
@@ -125,6 +170,22 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
                     selectedDate = date;
                   });
                 }
+              },
+            ),
+
+            SwitchListTile(
+              title: const Text("Vytvořit připomínku"),
+
+              subtitle: const Text(
+                "Automaticky vytvoří další servisní upozornění",
+              ),
+
+              value: reminderEnabled,
+
+              onChanged: (value) {
+                setState(() {
+                  reminderEnabled = value;
+                });
               },
             ),
 

@@ -29,6 +29,8 @@ final fuelRepositoryProvider = FutureProvider<FuelRepository>((ref) async {
   return FuelRepository(isar);
 });
 
-final reminderRepositoryProvider = Provider<ReminderRepository>((ref) {
+final reminderRepositoryProvider = FutureProvider<ReminderRepository>((
+  ref,
+) async {
   return ReminderRepository();
 });

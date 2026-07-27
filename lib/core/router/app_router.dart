@@ -3,6 +3,9 @@ import 'package:autolog/features/cars/screens/car_dashboard_screen.dart';
 import 'package:autolog/features/cars/screens/home_screen.dart';
 import 'package:autolog/features/fuel/screens/add_fuel_screen.dart';
 import 'package:autolog/features/fuel/screens/fuel_screen.dart';
+import 'package:autolog/features/reminders/models/reminder.dart';
+import 'package:autolog/features/reminders/screens/add_reminder_screen.dart';
+import 'package:autolog/features/reminders/screens/edit_reminder_screen.dart';
 import 'package:autolog/features/service/screens/add_service_screen.dart';
 import 'package:autolog/features/service/screens/service_screen.dart';
 import 'package:go_router/go_router.dart';
@@ -56,6 +59,23 @@ final appRouter = GoRouter(
         final carId = state.pathParameters['carId']!;
 
         return AddFuelScreen(carId: carId);
+      },
+    ),
+
+    GoRoute(
+      path: '/reminder/:carId/add',
+      builder: (context, state) {
+        return AddReminderScreen(
+          carId: int.parse(state.pathParameters['carId']!),
+        );
+      },
+    ),
+    GoRoute(
+      path: "/reminder/edit",
+      builder: (context, state) {
+        final reminder = state.extra as Reminder;
+
+        return EditReminderScreen(carId: reminder.carId, reminder: reminder);
       },
     ),
   ],
