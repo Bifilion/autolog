@@ -6,7 +6,10 @@ import 'package:autolog/features/fuel/screens/fuel_screen.dart';
 import 'package:autolog/features/reminders/models/reminder.dart';
 import 'package:autolog/features/reminders/screens/add_reminder_screen.dart';
 import 'package:autolog/features/reminders/screens/edit_reminder_screen.dart';
+import 'package:autolog/features/service/models/service_record.dart';
 import 'package:autolog/features/service/screens/add_service_screen.dart';
+import 'package:autolog/features/service/screens/edit_service_screen.dart';
+import 'package:autolog/features/service/screens/service_history_screen.dart';
 import 'package:autolog/features/service/screens/service_screen.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,6 +26,16 @@ final appRouter = GoRouter(
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return CarDashboardScreen(carId: id);
+      },
+    ),
+
+    GoRoute(
+      path: "/service/edit",
+
+      builder: (context, state) {
+        final service = state.extra as ServiceRecord;
+
+        return EditServiceScreen(service: service);
       },
     ),
     GoRoute(
@@ -76,6 +89,13 @@ final appRouter = GoRouter(
         final reminder = state.extra as Reminder;
 
         return EditReminderScreen(carId: reminder.carId, reminder: reminder);
+      },
+    ),
+
+    GoRoute(
+      path: '/service/:carId/history',
+      builder: (context, state) {
+        return ServiceHistoryScreen(carId: state.pathParameters['carId']!);
       },
     ),
   ],

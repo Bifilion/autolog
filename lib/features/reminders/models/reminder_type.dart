@@ -19,6 +19,8 @@ enum ReminderType {
   inspection,
   emissions,
   insurance,
+  transmissionOil,
+  annualService,
   custom,
 }
 
@@ -73,6 +75,12 @@ extension ReminderTypeExtension on ReminderType {
       case ReminderType.insurance:
         return "Povinné ručení";
 
+      case ReminderType.transmissionOil:
+        return "Převodový olej";
+
+      case ReminderType.annualService:
+        return "Roční servis";
+
       case ReminderType.custom:
         return "Vlastní";
     }
@@ -117,6 +125,12 @@ extension ReminderTypeExtension on ReminderType {
 
       case ReminderType.insurance:
         return Icons.security;
+
+      case ReminderType.transmissionOil:
+        return Icons.settings;
+
+      case ReminderType.annualService:
+        return Icons.build;
 
       case ReminderType.custom:
         return Icons.notifications;

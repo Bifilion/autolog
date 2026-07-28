@@ -17,6 +17,15 @@ class ReminderRepository {
     });
   }
 
+  Future<Reminder?> getByServiceId(int serviceId) async {
+    final isar = await IsarDatabase.getInstance();
+
+    return await isar.reminders
+        .filter()
+        .serviceIdEqualTo(serviceId)
+        .findFirst();
+  }
+
   Future<void> update(Reminder reminder) async {
     final isar = await IsarDatabase.getInstance();
 

@@ -1,3 +1,4 @@
+import 'package:autolog/core/database/isar_database.dart';
 import 'package:isar/isar.dart';
 
 import '../models/service_record.dart';
@@ -20,6 +21,14 @@ class ServiceRepository {
   Future<void> remove(int id) async {
     await isar.writeTxn(() async {
       await isar.serviceRecords.delete(id);
+    });
+  }
+
+  Future<void> update(ServiceRecord service) async {
+    final isar = await IsarDatabase.getInstance();
+
+    await isar.writeTxn(() async {
+      await isar.serviceRecords.put(service);
     });
   }
 

@@ -97,6 +97,17 @@ class CarDashboardScreen extends ConsumerWidget {
 
                 LastServiceCard(carId: carIdInt),
 
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.history),
+                    title: const Text("Historie servisu"),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      context.push('/service/$carId/history');
+                    },
+                  ),
+                ),
+
                 StatisticsCard(
                   fuelCost: fuelCost.value ?? 0,
                   serviceCost: serviceCost.value ?? 0,

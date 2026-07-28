@@ -25,10 +25,25 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
 
   final noteController = TextEditingController();
 
+  final intervalKmController = TextEditingController();
+
+  final intervalMonthsController = TextEditingController();
+
   ServiceType selectedType = ServiceType.oil;
 
   DateTime selectedDate = DateTime.now();
   bool reminderEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    intervalKmController.text =
+        selectedType.defaultIntervalKm?.toString() ?? "";
+
+    intervalMonthsController.text =
+        selectedType.defaultIntervalMonths?.toString() ?? "";
+  }
 
   Future<void> saveService() async {
     if (kilometresController.text.isEmpty ||
@@ -50,25 +65,41 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
 
       type: selectedType,
 
-      title: titleController.text,
+      title: selectedType == ServiceType.custom ? titleController.text : null,
 
       price: double.tryParse(priceController.text) ?? 0,
 
       note: noteController.text,
 
       reminderEnabled: reminderEnabled,
+
+      intervalKilometers: reminderEnabled
+          ? int.tryParse(intervalKmController.text)
+          : null,
+
+      intervalMonths: reminderEnabled
+          ? int.tryParse(intervalMonthsController.text)
+          : null,
     );
     await ref.read(serviceProvider.notifier).addService(service);
 
-    if (service.reminderEnabled) {
+    if (service.reminderEnabled &&
+        (service.intervalKilometers != null ||
+            service.intervalMonths != null)) {
       final reminder = Reminder(
         carId: service.carId,
 
         title: service.displayName,
 
+        serviceId: service.id,
+
         type: service.type.toReminderType(),
 
-        intervalKilometers: 15000,
+        intervalKilometers: service.intervalKilometers,
+
+        intervalDays: service.intervalMonths != null
+            ? service.intervalMonths! * 30
+            : null,
 
         lastKilometers: service.kilometers,
 
@@ -93,106 +124,142 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16),
 
-        child: Column(
-          children: [
-            DropdownButtonFormField<ServiceType>(
-              value: selectedType,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              DropdownButtonFormField<ServiceType>(
+                initialValue: selectedType,
 
-              decoration: const InputDecoration(labelText: "Typ servisu"),
+                decoration: const InputDecoration(labelText: "Typ servisu"),
 
-              items: ServiceType.values.map((type) {
-                return DropdownMenuItem(value: type, child: Text(type.label));
-              }).toList(),
+                items: ServiceType.values.map((type) {
+                  return DropdownMenuItem(value: type, child: Text(type.label));
+                }).toList(),
 
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    selectedType = value;
-                  });
-                }
-              },
-            ),
-            if (selectedType == ServiceType.custom)
-              TextField(
-                controller: titleController,
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      selectedType = value;
 
-                decoration: const InputDecoration(
-                  labelText: "Název vlastního servisu",
+                      intervalKmController.text =
+                          value.defaultIntervalKm?.toString() ?? "";
+
+                      intervalMonthsController.text =
+                          value.defaultIntervalMonths?.toString() ?? "";
+                    });
+                  }
+                },
+              ),
+              if (selectedType == ServiceType.custom)
+                TextField(
+                  controller: titleController,
+
+                  decoration: const InputDecoration(
+                    labelText: "Název vlastního servisu",
+                  ),
                 ),
+
+              TextField(
+                controller: kilometresController,
+
+                keyboardType: TextInputType.number,
+
+                decoration: const InputDecoration(labelText: "Kilometry"),
               ),
 
-            TextField(
-              controller: kilometresController,
+              TextField(
+                controller: priceController,
 
-              keyboardType: TextInputType.number,
+                keyboardType: TextInputType.number,
 
-              decoration: const InputDecoration(labelText: "Kilometry"),
-            ),
-
-            TextField(
-              controller: priceController,
-
-              keyboardType: TextInputType.number,
-
-              decoration: const InputDecoration(labelText: "Cena"),
-            ),
-
-            TextField(
-              controller: noteController,
-
-              decoration: const InputDecoration(labelText: "Poznámka"),
-            ),
-
-            const SizedBox(height: 20),
-
-            ListTile(
-              leading: const Icon(Icons.calendar_month),
-
-              title: Text(
-                "${selectedDate.day}.${selectedDate.month}.${selectedDate.year}",
+                decoration: const InputDecoration(labelText: "Cena"),
               ),
 
-              trailing: const Icon(Icons.edit),
+              TextField(
+                controller: noteController,
 
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
+                decoration: const InputDecoration(labelText: "Poznámka"),
+              ),
 
-                  initialDate: selectedDate,
+              const SizedBox(height: 20),
 
-                  firstDate: DateTime(2000),
+              ListTile(
+                leading: const Icon(Icons.calendar_month),
 
-                  lastDate: DateTime.now(),
-                );
+                title: Text(
+                  "${selectedDate.day}.${selectedDate.month}.${selectedDate.year}",
+                ),
 
-                if (date != null) {
+                trailing: const Icon(Icons.edit),
+
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+
+                    initialDate: selectedDate,
+
+                    firstDate: DateTime(2000),
+
+                    lastDate: DateTime.now(),
+                  );
+
+                  if (date != null) {
+                    setState(() {
+                      selectedDate = date;
+                    });
+                  }
+                },
+              ),
+
+              SwitchListTile(
+                title: const Text("Vytvořit připomínku"),
+
+                subtitle: const Text(
+                  "Automaticky vytvoří další servisní upozornění",
+                ),
+
+                value: reminderEnabled,
+
+                onChanged: (value) {
                   setState(() {
-                    selectedDate = date;
+                    reminderEnabled = value;
                   });
-                }
-              },
-            ),
-
-            SwitchListTile(
-              title: const Text("Vytvořit připomínku"),
-
-              subtitle: const Text(
-                "Automaticky vytvoří další servisní upozornění",
+                },
               ),
 
-              value: reminderEnabled,
+              if (reminderEnabled) ...[
+                TextField(
+                  controller: intervalKmController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: "Interval (km)"),
+                ),
 
-              onChanged: (value) {
-                setState(() {
-                  reminderEnabled = value;
-                });
-              },
-            ),
+                TextField(
+                  controller: intervalMonthsController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: "Interval (měsíce)",
+                  ),
+                ),
+              ],
 
-            FilledButton(onPressed: saveService, child: const Text("Uložit")),
-          ],
+              FilledButton(onPressed: saveService, child: const Text("Uložit")),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    kilometresController.dispose();
+    priceController.dispose();
+    noteController.dispose();
+    intervalKmController.dispose();
+    intervalMonthsController.dispose();
+
+    super.dispose();
   }
 }

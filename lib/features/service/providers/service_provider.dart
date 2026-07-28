@@ -45,6 +45,17 @@ class ServiceNotifier extends AsyncNotifier<List<ServiceRecord>> {
     state = AsyncData(await repo.getAll());
   }
 
+  Future<void> updateService(ServiceRecord service) async {
+    final repo = await repository;
+
+    await repo.update(service);
+
+    state = AsyncData(await repo.getAll());
+
+    ref.invalidate(totalServiceCostProvider(service.carId));
+    ref.invalidate(latestServiceProvider(service.carId));
+  }
+
   Future<List<ServiceRecord>> getByCar(int carId) async {
     final repo = await repository;
 

@@ -10,6 +10,8 @@ class Reminder {
 
   late int carId;
 
+  int? serviceId;
+
   @enumerated
   late ReminderType type;
 
@@ -30,6 +32,7 @@ class Reminder {
   Reminder({
     required this.carId,
     required this.type,
+    this.serviceId,
     this.intervalKilometers,
     this.intervalDays,
     this.lastDate,

@@ -47,13 +47,18 @@ const ReminderSchema = CollectionSchema(
       name: r'lastKilometers',
       type: IsarType.long,
     ),
-    r'title': PropertySchema(
+    r'serviceId': PropertySchema(
       id: 6,
+      name: r'serviceId',
+      type: IsarType.long,
+    ),
+    r'title': PropertySchema(
+      id: 7,
       name: r'title',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'type',
       type: IsarType.byte,
       enumMap: _RemindertypeEnumValueMap,
@@ -100,8 +105,9 @@ void _reminderSerialize(
   writer.writeLong(offsets[3], object.intervalKilometers);
   writer.writeDateTime(offsets[4], object.lastDate);
   writer.writeLong(offsets[5], object.lastKilometers);
-  writer.writeString(offsets[6], object.title);
-  writer.writeByte(offsets[7], object.type.index);
+  writer.writeLong(offsets[6], object.serviceId);
+  writer.writeString(offsets[7], object.title);
+  writer.writeByte(offsets[8], object.type.index);
 }
 
 Reminder _reminderDeserialize(
@@ -117,8 +123,9 @@ Reminder _reminderDeserialize(
     intervalKilometers: reader.readLongOrNull(offsets[3]),
     lastDate: reader.readDateTimeOrNull(offsets[4]),
     lastKilometers: reader.readLongOrNull(offsets[5]),
-    title: reader.readStringOrNull(offsets[6]),
-    type: _RemindertypeValueEnumMap[reader.readByteOrNull(offsets[7])] ??
+    serviceId: reader.readLongOrNull(offsets[6]),
+    title: reader.readStringOrNull(offsets[7]),
+    type: _RemindertypeValueEnumMap[reader.readByteOrNull(offsets[8])] ??
         ReminderType.oil,
   );
   object.id = id;
@@ -145,8 +152,10 @@ P _reminderDeserializeProp<P>(
     case 5:
       return (reader.readLongOrNull(offset)) as P;
     case 6:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
       return (_RemindertypeValueEnumMap[reader.readByteOrNull(offset)] ??
           ReminderType.oil) as P;
     default:
@@ -171,7 +180,9 @@ const _RemindertypeEnumValueMap = {
   'inspection': 13,
   'emissions': 14,
   'insurance': 15,
-  'custom': 16,
+  'transmissionOil': 16,
+  'annualService': 17,
+  'custom': 18,
 };
 const _RemindertypeValueEnumMap = {
   0: ReminderType.oil,
@@ -190,7 +201,9 @@ const _RemindertypeValueEnumMap = {
   13: ReminderType.inspection,
   14: ReminderType.emissions,
   15: ReminderType.insurance,
-  16: ReminderType.custom,
+  16: ReminderType.transmissionOil,
+  17: ReminderType.annualService,
+  18: ReminderType.custom,
 };
 
 Id _reminderGetId(Reminder object) {
@@ -684,6 +697,75 @@ extension ReminderQueryFilter
     });
   }
 
+  QueryBuilder<Reminder, Reminder, QAfterFilterCondition> serviceIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'serviceId',
+      ));
+    });
+  }
+
+  QueryBuilder<Reminder, Reminder, QAfterFilterCondition> serviceIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'serviceId',
+      ));
+    });
+  }
+
+  QueryBuilder<Reminder, Reminder, QAfterFilterCondition> serviceIdEqualTo(
+      int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serviceId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Reminder, Reminder, QAfterFilterCondition> serviceIdGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'serviceId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Reminder, Reminder, QAfterFilterCondition> serviceIdLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'serviceId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Reminder, Reminder, QAfterFilterCondition> serviceIdBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'serviceId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Reminder, Reminder, QAfterFilterCondition> titleIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -964,6 +1046,18 @@ extension ReminderQuerySortBy on QueryBuilder<Reminder, Reminder, QSortBy> {
     });
   }
 
+  QueryBuilder<Reminder, Reminder, QAfterSortBy> sortByServiceId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'serviceId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Reminder, Reminder, QAfterSortBy> sortByServiceIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'serviceId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Reminder, Reminder, QAfterSortBy> sortByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -1076,6 +1170,18 @@ extension ReminderQuerySortThenBy
     });
   }
 
+  QueryBuilder<Reminder, Reminder, QAfterSortBy> thenByServiceId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'serviceId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Reminder, Reminder, QAfterSortBy> thenByServiceIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'serviceId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Reminder, Reminder, QAfterSortBy> thenByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -1139,6 +1245,12 @@ extension ReminderQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Reminder, Reminder, QDistinct> distinctByServiceId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'serviceId');
+    });
+  }
+
   QueryBuilder<Reminder, Reminder, QDistinct> distinctByTitle(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1194,6 +1306,12 @@ extension ReminderQueryProperty
   QueryBuilder<Reminder, int?, QQueryOperations> lastKilometersProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastKilometers');
+    });
+  }
+
+  QueryBuilder<Reminder, int?, QQueryOperations> serviceIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'serviceId');
     });
   }
 
