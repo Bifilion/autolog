@@ -1,5 +1,6 @@
 import 'package:autolog/core/database/isar_database.dart';
 import 'package:autolog/features/cars/repositories/car_repository.dart';
+import 'package:autolog/features/expenses/repositories/expense_repository.dart';
 import 'package:autolog/features/fuel/repositories/fuel_repository.dart';
 import 'package:autolog/features/reminders/repositories/reminder_repository.dart';
 import 'package:autolog/features/service/repositories/service_repository.dart';
@@ -33,4 +34,10 @@ final reminderRepositoryProvider = FutureProvider<ReminderRepository>((
   ref,
 ) async {
   return ReminderRepository();
+});
+
+final expenseRepositoryProvider = FutureProvider<ExpenseRepository>((
+  ref,
+) async {
+  return ExpenseRepository();
 });

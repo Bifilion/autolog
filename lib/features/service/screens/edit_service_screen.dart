@@ -1,3 +1,4 @@
+import 'package:autolog/features/reminders/providers/reminder_provider.dart';
 import 'package:autolog/features/service/models/service_record.dart';
 import 'package:autolog/features/service/models/service_type.dart';
 import 'package:autolog/features/service/providers/service_provider.dart';
@@ -75,6 +76,8 @@ class _EditServiceScreenState extends ConsumerState<EditServiceScreen> {
     await ref.read(serviceProvider.notifier).removeService(widget.service);
 
     await ref.read(serviceProvider.notifier).updateService(updated);
+
+    await ref.read(reminderProvider.notifier).updateByService(updated);
 
     if (mounted) {
       context.pop();

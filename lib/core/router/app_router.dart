@@ -1,11 +1,13 @@
 import 'package:autolog/features/cars/screens/add_car_screen.dart';
 import 'package:autolog/features/cars/screens/car_dashboard_screen.dart';
 import 'package:autolog/features/cars/screens/home_screen.dart';
+import 'package:autolog/features/expenses/screens/expense_history_screen.dart';
 import 'package:autolog/features/fuel/screens/add_fuel_screen.dart';
 import 'package:autolog/features/fuel/screens/fuel_screen.dart';
 import 'package:autolog/features/reminders/models/reminder.dart';
 import 'package:autolog/features/reminders/screens/add_reminder_screen.dart';
 import 'package:autolog/features/reminders/screens/edit_reminder_screen.dart';
+import 'package:autolog/features/reminders/screens/reminder_screen.dart';
 import 'package:autolog/features/service/models/service_record.dart';
 import 'package:autolog/features/service/screens/add_service_screen.dart';
 import 'package:autolog/features/service/screens/edit_service_screen.dart';
@@ -74,6 +76,21 @@ final appRouter = GoRouter(
         return AddFuelScreen(carId: carId);
       },
     ),
+    GoRoute(
+      path: "/reminder/edit",
+      builder: (context, state) {
+        final reminder = state.extra as Reminder;
+
+        return EditReminderScreen(carId: reminder.carId, reminder: reminder);
+      },
+    ),
+    GoRoute(
+      path: "/reminder/:carId",
+
+      builder: (context, state) {
+        return ReminderScreen(carId: int.parse(state.pathParameters['carId']!));
+      },
+    ),
 
     GoRoute(
       path: '/reminder/:carId/add',
@@ -83,19 +100,19 @@ final appRouter = GoRouter(
         );
       },
     ),
-    GoRoute(
-      path: "/reminder/edit",
-      builder: (context, state) {
-        final reminder = state.extra as Reminder;
-
-        return EditReminderScreen(carId: reminder.carId, reminder: reminder);
-      },
-    ),
 
     GoRoute(
       path: '/service/:carId/history',
       builder: (context, state) {
         return ServiceHistoryScreen(carId: state.pathParameters['carId']!);
+      },
+    ),
+
+    GoRoute(
+      path: '/expenses/:carId/history',
+
+      builder: (context, state) {
+        return ExpenseHistoryScreen(carId: state.pathParameters['carId']!);
       },
     ),
   ],

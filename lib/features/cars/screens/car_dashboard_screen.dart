@@ -1,11 +1,11 @@
 import 'package:autolog/features/cars/providers/car_provider.dart';
 import 'package:autolog/features/cars/widgets/dashboard_header.dart';
-import 'package:autolog/features/cars/widgets/last_fuel_card.dart';
 import 'package:autolog/features/cars/widgets/last_service_card.dart';
+import 'package:autolog/features/cars/widgets/quick_action_card.dart';
 import 'package:autolog/features/cars/widgets/reminder_card.dart';
 import 'package:autolog/features/cars/widgets/statistics_card.dart';
-import 'package:autolog/features/expenses/providers/expense_provider.dart';
-
+import 'package:autolog/features/expenses/models/expense_type.dart';
+import 'package:autolog/features/expenses/providers/expense_stats_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,9 +21,15 @@ class CarDashboardScreen extends ConsumerWidget {
 
     final carFuture = ref.read(carProvider.notifier).getCarById(carIdInt);
 
-    final fuelCost = ref.watch(totalFuelCostProvider(carIdInt));
+    final fuelCost = ref.watch(
+      expenseByTypeProvider((carId: carIdInt, type: ExpenseType.fuel)),
+    );
 
-    final serviceCost = ref.watch(totalServiceCostProvider(carIdInt));
+    final serviceCost = ref.watch(
+      expenseByTypeProvider((carId: carIdInt, type: ExpenseType.service)),
+    );
+
+    final otherCost = ref.watch(totalOtherCostProvider(carIdInt));
 
     return FutureBuilder(
       future: carFuture,
@@ -55,45 +61,57 @@ class CarDashboardScreen extends ConsumerWidget {
 
                 const SizedBox(height: 20),
 
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.build),
-
-                    title: const Text("Servis"),
-
-                    subtitle: const Text("Žádné záznamy"),
-
-                    onTap: () {
-                      context.push('/service/$carId');
-                    },
-                  ),
+                const Text(
+                  "Rychlé akce",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.local_gas_station),
 
-                    title: const Text("Tankování"),
+                const SizedBox(height: 12),
 
-                    subtitle: const Text("Žádná data"),
+                Row(
+                  children: [
+                    Expanded(
+                      child: QuickActionCard(
+                        icon: Icons.build,
+                        title: "Servis",
 
-                    onTap: () {
-                      context.push('/fuel/$carId');
-                    },
-                  ),
+                        onTap: () {
+                          context.push('/service/$carId');
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    Expanded(
+                      child: QuickActionCard(
+                        icon: Icons.local_gas_station,
+                        title: "Tankování",
+
+                        onTap: () {
+                          context.push('/fuel/$carId');
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    Expanded(
+                      child: QuickActionCard(
+                        icon: Icons.notifications,
+                        title: "Připomínka",
+
+                        onTap: () {
+                          context.push('/reminder/$carId/add');
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                LastFuelCard(carId: carIdInt),
-
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.notifications),
-                    title: const Text("Připomínky"),
-
-                    onTap: () {
-                      context.push('/reminder/$carId/add');
-                    },
-                  ),
+                ReminderCard(
+                  carId: carIdInt,
+                  currentKilometers: car.kilometers,
                 ),
-                ReminderCard(carId: int.parse(carId)),
 
                 LastServiceCard(carId: carIdInt),
 
@@ -108,9 +126,24 @@ class CarDashboardScreen extends ConsumerWidget {
                   ),
                 ),
 
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.payments),
+
+                    title: const Text("Náklady"),
+
+                    trailing: const Icon(Icons.chevron_right),
+
+                    onTap: () {
+                      context.push('/expenses/$carId/history');
+                    },
+                  ),
+                ),
+
                 StatisticsCard(
                   fuelCost: fuelCost.value ?? 0,
                   serviceCost: serviceCost.value ?? 0,
+                  otherCost: otherCost.value ?? 0,
                 ),
               ],
             ),

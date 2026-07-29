@@ -1,3 +1,6 @@
+import 'package:autolog/features/expenses/models/expense.dart';
+import 'package:autolog/features/expenses/models/expense_type.dart';
+import 'package:autolog/features/expenses/providers/expense_provider.dart';
 import 'package:autolog/features/reminders/models/reminder.dart';
 import 'package:autolog/features/reminders/providers/reminder_provider.dart';
 import 'package:autolog/features/service/models/service_record.dart';
@@ -82,6 +85,18 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
           : null,
     );
     await ref.read(serviceProvider.notifier).addService(service);
+
+    await ref
+        .read(expenseProvider.notifier)
+        .addExpense(
+          Expense(
+            carId: service.carId,
+            date: service.date,
+            amount: service.price,
+            type: ExpenseType.service,
+            title: service.displayName,
+          ),
+        );
 
     if (service.reminderEnabled &&
         (service.intervalKilometers != null ||

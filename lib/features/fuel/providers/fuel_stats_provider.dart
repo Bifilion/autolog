@@ -8,3 +8,17 @@ final latestFuelProvider = FutureProvider.family<FuelRecord?, int>((
 ) async {
   return await ref.read(fuelProvider.notifier).getLatestByCar(carId);
 });
+final totalFuelCostProvider = FutureProvider.family<double, int>((
+  ref,
+  carId,
+) async {
+  final fuel = await ref.read(fuelProvider.notifier).getByCar(carId);
+
+  double total = 0;
+
+  for (final item in fuel) {
+    total += item.price;
+  }
+
+  return total;
+});

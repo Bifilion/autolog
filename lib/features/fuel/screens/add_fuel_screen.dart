@@ -1,3 +1,6 @@
+import 'package:autolog/features/expenses/models/expense.dart';
+import 'package:autolog/features/expenses/models/expense_type.dart';
+import 'package:autolog/features/expenses/providers/expense_provider.dart';
 import 'package:autolog/features/fuel/models/fuel_record.dart';
 import 'package:autolog/features/fuel/providers/fuel_providers.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +49,18 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
     );
 
     await ref.read(fuelProvider.notifier).addFuel(fuel);
+
+    await ref
+        .read(expenseProvider.notifier)
+        .addExpense(
+          Expense(
+            carId: fuel.carId,
+            date: fuel.date,
+            amount: fuel.price,
+            type: ExpenseType.fuel,
+            title: "Tankování",
+          ),
+        );
 
     if (mounted) {
       context.pop();

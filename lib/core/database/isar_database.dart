@@ -1,4 +1,5 @@
 import 'package:autolog/features/cars/models/car.dart';
+import 'package:autolog/features/expenses/models/expense.dart';
 import 'package:autolog/features/reminders/models/reminder.dart';
 import 'package:autolog/features/service/models/service_record.dart';
 import 'package:autolog/features/fuel/models/fuel_record.dart';
@@ -20,6 +21,7 @@ class IsarDatabase {
       ServiceRecordSchema,
       FuelRecordSchema,
       ReminderSchema,
+      ExpenseSchema,
     ], directory: dir.path);
 
     return _isar!;

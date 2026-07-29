@@ -1,21 +1,51 @@
-import 'package:autolog/features/fuel/providers/fuel_providers.dart';
-import 'package:autolog/features/service/providers/service_provider.dart';
+import 'package:autolog/core/providers/repository_providers.dart';
+import 'package:autolog/features/expenses/models/expense.dart';
+import 'package:autolog/features/expenses/repositories/expense_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final totalFuelCostProvider = FutureProvider.family<double, int>((
-  ref,
-  carId,
-) async {
-  final fuels = await ref.read(fuelProvider.notifier).getByCar(carId);
+class ExpenseNotifier extends AsyncNotifier<List<Expense>> {
+  ExpenseRepository? _repository;
 
-  return fuels.fold<double>(0.0, (sum, fuel) => sum + fuel.price);
-});
+  Future<ExpenseRepository> get repository async {
+    if (_repository != null) {
+      return _repository!;
+    }
 
-final totalServiceCostProvider = FutureProvider.family<double, int>((
-  ref,
-  carId,
-) async {
-  final services = await ref.read(serviceProvider.notifier).getByCar(carId);
+    _repository = await ref.read(expenseRepositoryProvider.future);
 
-  return services.fold<double>(0.0, (sum, service) => sum + service.price);
-});
+    return _repository!;
+  }
+
+  @override
+  Future<List<Expense>> build() async {
+    final repo = await repository;
+
+    return await repo.getAll();
+  }
+
+  Future<void> addExpense(Expense expense) async {
+    final repo = await repository;
+
+    await repo.add(expense);
+
+    state = AsyncData(await repo.getAll());
+  }
+
+  Future<void> removeExpense(Expense expense) async {
+    final repo = await repository;
+
+    await repo.remove(expense.id);
+
+    state = AsyncData(await repo.getAll());
+  }
+
+  Future<List<Expense>> getByCar(int carId) async {
+    final repo = await repository;
+
+    return await repo.getByCar(carId);
+  }
+}
+
+final expenseProvider = AsyncNotifierProvider<ExpenseNotifier, List<Expense>>(
+  ExpenseNotifier.new,
+);
