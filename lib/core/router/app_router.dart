@@ -13,6 +13,7 @@ import 'package:autolog/features/service/screens/add_service_screen.dart';
 import 'package:autolog/features/service/screens/edit_service_screen.dart';
 import 'package:autolog/features/service/screens/service_history_screen.dart';
 import 'package:autolog/features/service/screens/service_screen.dart';
+import 'package:autolog/features/statistics/screens/statistics_screen.dart';
 import 'package:go_router/go_router.dart';
 
 final appRouter = GoRouter(
@@ -113,6 +114,14 @@ final appRouter = GoRouter(
 
       builder: (context, state) {
         return ExpenseHistoryScreen(carId: state.pathParameters['carId']!);
+      },
+    ),
+
+    GoRoute(
+      path: "/statistics/:carId",
+
+      builder: (context, state) {
+        return StatisticsScreen(carId: state.pathParameters['carId']!);
       },
     ),
   ],

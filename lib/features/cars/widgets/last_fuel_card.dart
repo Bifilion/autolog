@@ -1,76 +1,101 @@
 import 'package:autolog/features/fuel/providers/fuel_stats_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class LastFuelCard extends ConsumerWidget {
   final int carId;
 
   const LastFuelCard({super.key, required this.carId});
 
+  String _daysAgo(DateTime date) {
+    final days = DateTime.now().difference(date).inDays;
+
+    if (days == 0) return "Dnes";
+    if (days == 1) return "Včera";
+    if (days < 30) return "Před $days dny";
+
+    final months = (days / 30).floor();
+
+    if (months == 1) return "Před měsícem";
+
+    if (months < 12) return "Před $months měsíci";
+
+    final years = (months / 12).floor();
+
+    if (years == 1) return "Před rokem";
+
+    return "Před $years lety";
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final latestFuel = ref.watch(latestFuelProvider(carId));
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+          child: Text(
+            "Poslední tankování",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+        Card(
+          child: latestFuel.when(
+            loading: () => const ListTile(title: Text("Načítání...")),
 
-        child: latestFuel.when(
-          data: (fuel) {
-            if (fuel == null) {
-              return const ListTile(
-                leading: Icon(Icons.local_gas_station),
-                title: Text("Poslední tankování"),
-                subtitle: Text("Žádný záznam"),
-              );
-            }
+            error: (_, _) => const ListTile(title: Text("Chyba načtení")),
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            data: (fuel) {
+              if (fuel == null) {
+                return const ListTile(
+                  leading: CircleAvatar(child: Icon(Icons.local_gas_station)),
+                  title: Text("Žádné tankování"),
+                );
+              }
 
-              children: [
-                Row(
+              return ListTile(
+                leading: const CircleAvatar(
+                  child: Icon(Icons.local_gas_station),
+                ),
+
+                title: Text(
+                  "${fuel.liters.toStringAsFixed(1)} l",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                subtitle: Text(
+                  "${fuel.date.day}.${fuel.date.month}.${fuel.date.year}"
+                  " • ${fuel.kilometers} km\n"
+                  "${fuel.pricePerLiter.toStringAsFixed(2)} Kč/l",
+                ),
+
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Icon(Icons.local_gas_station),
-
-                    const SizedBox(width: 10),
+                    Text(
+                      "${fuel.price.toStringAsFixed(0)} Kč",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
 
                     Text(
-                      "Poslední tankování",
-                      style: Theme.of(context).textTheme.titleLarge,
+                      _daysAgo(fuel.date),
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 12),
-
-                Text("⛽ ${fuel.liters.toStringAsFixed(1)} litrů"),
-
-                Text("💰 ${fuel.price.toStringAsFixed(0)} Kč"),
-
-                Text("💵 ${fuel.pricePerLiter.toStringAsFixed(2)} Kč/l"),
-
-                Text("🚗 ${fuel.kilometers} km"),
-
-                Text(
-                  "📅 "
-                  "${fuel.date.day}."
-                  "${fuel.date.month}."
-                  "${fuel.date.year}",
-                ),
-              ],
-            );
-          },
-
-          loading: () => const Center(child: CircularProgressIndicator()),
-
-          error: (error, stack) => const ListTile(
-            leading: Icon(Icons.error),
-
-            title: Text("Chyba načtení tankování"),
+                onTap: () {
+                  context.push("/fuel/$carId");
+                },
+              );
+            },
           ),
         ),
-      ),
+      ],
     );
   }
 }

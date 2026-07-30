@@ -1,4 +1,5 @@
 import 'package:autolog/features/service/models/service_record.dart';
+import 'package:autolog/features/service/models/service_type.dart';
 import 'package:autolog/features/service/providers/service_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,3 +26,16 @@ final totalServiceCostProvider = FutureProvider.family<double, int>((
 
   return services.fold<double>(0.0, (sum, service) => sum + service.price);
 });
+
+final serviceCostByTypeProvider =
+    FutureProvider.family<Map<ServiceType, double>, int>((ref, carId) async {
+      final services = await ref.read(serviceProvider.notifier).getByCar(carId);
+
+      final Map<ServiceType, double> result = {};
+
+      for (final service in services) {
+        result[service.type] = (result[service.type] ?? 0) + service.price;
+      }
+
+      return result;
+    });

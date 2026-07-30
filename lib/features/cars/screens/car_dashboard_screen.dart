@@ -1,11 +1,13 @@
 import 'package:autolog/features/cars/providers/car_provider.dart';
 import 'package:autolog/features/cars/widgets/dashboard_header.dart';
+import 'package:autolog/features/cars/widgets/last_fuel_card.dart';
 import 'package:autolog/features/cars/widgets/last_service_card.dart';
 import 'package:autolog/features/cars/widgets/quick_action_card.dart';
 import 'package:autolog/features/cars/widgets/reminder_card.dart';
 import 'package:autolog/features/cars/widgets/statistics_card.dart';
 import 'package:autolog/features/expenses/models/expense_type.dart';
 import 'package:autolog/features/expenses/providers/expense_stats_provider.dart';
+import 'package:autolog/features/statistics/widgets/cost_overview_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -115,16 +117,7 @@ class CarDashboardScreen extends ConsumerWidget {
 
                 LastServiceCard(carId: carIdInt),
 
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.history),
-                    title: const Text("Historie servisu"),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      context.push('/service/$carId/history');
-                    },
-                  ),
-                ),
+                LastFuelCard(carId: carIdInt),
 
                 Card(
                   child: ListTile(
@@ -140,11 +133,7 @@ class CarDashboardScreen extends ConsumerWidget {
                   ),
                 ),
 
-                StatisticsCard(
-                  fuelCost: fuelCost.value ?? 0,
-                  serviceCost: serviceCost.value ?? 0,
-                  otherCost: otherCost.value ?? 0,
-                ),
+                CostOverviewCard(carId: carIdInt),
               ],
             ),
           ),
