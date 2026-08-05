@@ -1,3 +1,4 @@
+import 'package:autolog/core/widgets/app_card.dart';
 import 'package:flutter/material.dart';
 
 class QuickActionCard extends StatelessWidget {
@@ -15,25 +16,42 @@ class QuickActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
 
       onTap: onTap,
 
-      child: Card(
-        child: SizedBox(
-          height: 90,
+      child: AppCard(
+        margin: const EdgeInsets.symmetric(horizontal: 0),
 
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
 
-            children: [
-              Icon(icon, size: 30),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
 
-              const SizedBox(height: 8),
+          children: [
+            Container(
+              width: 38,
+              height: 38,
 
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
+              decoration: BoxDecoration(
+                color: const Color(0xff7B6EF6),
+
+                borderRadius: BorderRadius.circular(12),
+              ),
+
+              child: Icon(icon, size: 22, color: Colors.white),
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(
+              title,
+
+              maxLines: 1,
+
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+            ),
+          ],
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:autolog/core/theme/app_theme.dart';
 import 'package:autolog/features/expenses/models/expense.dart';
 import 'package:autolog/features/expenses/models/expense_type.dart';
 import 'package:autolog/features/expenses/providers/expense_provider.dart';
@@ -55,9 +56,13 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
         .addExpense(
           Expense(
             carId: fuel.carId,
+
             date: fuel.date,
+
             amount: fuel.price,
+
             type: ExpenseType.fuel,
+
             title: "Tankování",
           ),
         );
@@ -67,78 +72,142 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
     }
   }
 
+  Widget _inputField({
+    required TextEditingController controller,
+    required String label,
+    required TextInputType keyboardType,
+    IconData? icon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+
+      child: TextField(
+        controller: controller,
+
+        keyboardType: keyboardType,
+
+        decoration: InputDecoration(
+          labelText: label,
+
+          prefixIcon: icon != null ? Icon(icon) : null,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
+
       appBar: AppBar(title: const Text("Přidat tankování")),
 
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
 
         child: Column(
           children: [
-            TextField(
+            _inputField(
               controller: kilometersController,
+
+              label: "Stav kilometrů",
 
               keyboardType: TextInputType.number,
 
-              decoration: const InputDecoration(labelText: "Stav kilometrů"),
+              icon: Icons.speed,
             ),
 
-            TextField(
+            _inputField(
               controller: litersController,
 
+              label: "Litry",
+
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
 
-              decoration: const InputDecoration(labelText: "Litry"),
+              icon: Icons.local_gas_station,
             ),
 
-            TextField(
+            _inputField(
               controller: priceController,
 
+              label: "Cena",
+
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
 
-              decoration: const InputDecoration(labelText: "Cena"),
+              icon: Icons.payments,
             ),
 
-            ListTile(
-              leading: const Icon(Icons.calendar_month),
+            const SizedBox(height: 8),
 
-              title: Text(
-                "${selectedDate.day}."
-                "${selectedDate.month}."
-                "${selectedDate.year}",
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
 
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
+              child: ListTile(
+                leading: const Icon(Icons.calendar_month),
 
-                  initialDate: selectedDate,
+                title: const Text("Datum tankování"),
 
-                  firstDate: DateTime(2000),
+                subtitle: Text(
+                  "${selectedDate.day}."
+                  "${selectedDate.month}."
+                  "${selectedDate.year}",
+                ),
 
-                  lastDate: DateTime.now(),
-                );
+                trailing: const Icon(Icons.edit),
 
-                if (date != null) {
-                  setState(() {
-                    selectedDate = date;
-                  });
-                }
-              },
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+
+                    initialDate: selectedDate,
+
+                    firstDate: DateTime(2000),
+
+                    lastDate: DateTime.now(),
+                  );
+
+                  if (date != null) {
+                    setState(() {
+                      selectedDate = date;
+                    });
+                  }
+                },
+              ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-            FilledButton(onPressed: saveFuel, child: const Text("Uložit")),
+            SizedBox(
+              width: double.infinity,
+
+              height: 52,
+
+              child: FilledButton(
+                onPressed: saveFuel,
+
+                child: const Text("Uložit tankování"),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    kilometersController.dispose();
+
+    litersController.dispose();
+
+    priceController.dispose();
+
+    super.dispose();
   }
 }

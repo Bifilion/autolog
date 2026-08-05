@@ -2,7 +2,9 @@ import 'package:autolog/features/cars/screens/add_car_screen.dart';
 import 'package:autolog/features/cars/screens/car_dashboard_screen.dart';
 import 'package:autolog/features/cars/screens/home_screen.dart';
 import 'package:autolog/features/expenses/screens/expense_history_screen.dart';
+import 'package:autolog/features/fuel/models/fuel_record.dart';
 import 'package:autolog/features/fuel/screens/add_fuel_screen.dart';
+import 'package:autolog/features/fuel/screens/edit_fuel_screen.dart';
 import 'package:autolog/features/fuel/screens/fuel_screen.dart';
 import 'package:autolog/features/reminders/models/reminder.dart';
 import 'package:autolog/features/reminders/screens/add_reminder_screen.dart';
@@ -27,7 +29,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/car/:id',
       builder: (context, state) {
-        final id = state.pathParameters['id']!;
+        final id = int.parse(state.pathParameters['id']!);
         return CarDashboardScreen(carId: id);
       },
     ),
@@ -60,6 +62,15 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: '/fuel/edit',
+      builder: (context, state) {
+        final fuel = state.extra as FuelRecord;
+
+        return EditFuelScreen(fuel: fuel);
+      },
+    ),
+
+    GoRoute(
       path: '/fuel/:carId',
 
       builder: (context, state) {
@@ -68,6 +79,7 @@ final appRouter = GoRouter(
         return FuelScreen(carId: carId);
       },
     ),
+
     GoRoute(
       path: '/fuel/:carId/add',
 

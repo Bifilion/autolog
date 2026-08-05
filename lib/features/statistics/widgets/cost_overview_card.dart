@@ -1,3 +1,4 @@
+import 'package:autolog/core/widgets/app_card.dart';
 import 'package:autolog/features/statistics/models/statistics_filter.dart';
 import 'package:autolog/features/statistics/providers/statistics_provider.dart';
 import 'package:flutter/material.dart';
@@ -17,180 +18,175 @@ class CostOverviewCard extends ConsumerWidget {
       ),
     );
 
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+    return AppCard(
+      onTap: () {
+        context.push("/statistics/$carId");
+      },
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
 
-        onTap: () {
-          context.push("/statistics/$carId");
-        },
-
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-
-          child: statistics.when(
-            loading: () => const SizedBox(
-              height: 180,
-
-              child: Center(child: CircularProgressIndicator()),
-            ),
-
-            error: (error, stack) => const SizedBox(
-              height: 180,
-
-              child: Center(child: Text("Chyba načtení nákladů")),
-            ),
-
-            data: (data) {
-              final total = data.totalCost;
-
-              final fuelPercent = total == 0 ? 0.0 : data.fuelCost / total;
-
-              final servicePercent = total == 0
-                  ? 0.0
-                  : data.serviceCost / total;
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.account_balance_wallet),
-
-                      const SizedBox(width: 10),
-
-                      Text(
-                        "Přehled nákladů",
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-
-                      const Spacer(),
-
-                      const Icon(Icons.chevron_right),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          "${total.toStringAsFixed(0)} Kč",
-
-                          style: const TextStyle(
-                            fontSize: 32,
-
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        Text(
-                          "Celkové náklady",
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _item(
-                          icon: Icons.local_gas_station,
-
-                          title: "Palivo",
-
-                          value: data.fuelCost,
-
-                          color: Colors.green,
-                        ),
-                      ),
-
-                      Expanded(
-                        child: _item(
-                          icon: Icons.build,
-
-                          title: "Servis",
-
-                          value: data.serviceCost,
-
-                          color: Colors.orange,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-
-                    child: SizedBox(
-                      height: 10,
-
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: (fuelPercent * 100).round(),
-
-                            child: Container(color: Colors.green),
-                          ),
-
-                          Expanded(
-                            flex: (servicePercent * 100).round(),
-
-                            child: Container(color: Colors.orange),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xff7B6EF6), Color(0xff5E4FE0)],
         ),
+      ),
+
+      child: statistics.when(
+        loading: () => const SizedBox(
+          height: 180,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+
+        error: (error, stack) => const SizedBox(
+          height: 180,
+          child: Center(child: Text("Chyba načtení nákladů")),
+        ),
+
+        data: (data) {
+          final total = data.totalCost;
+
+          final fuelPercent = total == 0 ? 0.0 : data.fuelCost / total;
+
+          final servicePercent = total == 0 ? 0.0 : data.serviceCost / total;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // HEADER
+              Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.account_balance_wallet_rounded,
+                      color: Colors.white,
+                    ),
+                  ),
+
+                  const SizedBox(width: 14),
+
+                  const Expanded(
+                    child: Text(
+                      "Přehled nákladů",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+
+                  const Icon(Icons.chevron_right, color: Colors.white),
+                ],
+              ),
+
+              const SizedBox(height: 26),
+
+              // TOTAL COST
+              Text(
+                "${total.toStringAsFixed(0)} Kč",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              const Text(
+                "Celkové náklady",
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+
+              const SizedBox(height: 30),
+
+              // FUEL
+              _costBar(
+                icon: Icons.local_gas_station,
+                title: "Palivo",
+                value: data.fuelCost,
+                percent: fuelPercent,
+                color: Colors.amberAccent,
+              ),
+
+              const SizedBox(height: 20),
+
+              // SERVICE
+              _costBar(
+                icon: Icons.build,
+                title: "Servis",
+                value: data.serviceCost,
+                percent: servicePercent,
+                color: Colors.lightBlueAccent,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _item({
+  Widget _costBar({
     required IconData icon,
-
     required String title,
-
     required double value,
-
+    required double percent,
     required Color color,
   }) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CircleAvatar(
-          radius: 18,
-
-          backgroundColor: color.withOpacity(0.15),
-
-          child: Icon(icon, color: color, size: 20),
-        ),
-
-        const SizedBox(width: 10),
-
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
+        Row(
           children: [
-            Text(title, style: const TextStyle(fontSize: 13)),
+            Icon(icon, size: 20, color: Colors.white),
+
+            const SizedBox(width: 8),
+
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+            ),
 
             Text(
               "${value.toStringAsFixed(0)} Kč",
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
 
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            const SizedBox(width: 8),
+
+            Text(
+              "${(percent * 100).round()} %",
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
             ),
           ],
+        ),
+
+        const SizedBox(height: 8),
+
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: LinearProgressIndicator(
+            value: percent,
+            minHeight: 8,
+            backgroundColor: Colors.white24,
+            valueColor: AlwaysStoppedAnimation(color),
+          ),
         ),
       ],
     );

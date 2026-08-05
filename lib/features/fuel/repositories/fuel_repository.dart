@@ -22,6 +22,12 @@ class FuelRepository {
     });
   }
 
+  Future<void> update(FuelRecord fuel) async {
+    await isar.writeTxn(() async {
+      await isar.fuelRecords.put(fuel);
+    });
+  }
+
   Future<List<FuelRecord>> getByCar(int carId) async {
     return await isar.fuelRecords.filter().carIdEqualTo(carId).findAll();
   }

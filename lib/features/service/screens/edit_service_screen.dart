@@ -1,3 +1,4 @@
+import 'package:autolog/core/theme/app_theme.dart';
 import 'package:autolog/features/reminders/providers/reminder_provider.dart';
 import 'package:autolog/features/service/models/service_record.dart';
 import 'package:autolog/features/service/models/service_type.dart';
@@ -22,7 +23,9 @@ class _EditServiceScreenState extends ConsumerState<EditServiceScreen> {
   late final TextEditingController noteController;
 
   late ServiceType selectedType;
+
   late DateTime selectedDate;
+
   late bool reminderEnabled;
 
   @override
@@ -73,8 +76,6 @@ class _EditServiceScreenState extends ConsumerState<EditServiceScreen> {
 
     updated.id = widget.service.id;
 
-    await ref.read(serviceProvider.notifier).removeService(widget.service);
-
     await ref.read(serviceProvider.notifier).updateService(updated);
 
     await ref.read(reminderProvider.notifier).updateByService(updated);
@@ -87,78 +88,191 @@ class _EditServiceScreenState extends ConsumerState<EditServiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
+
       appBar: AppBar(title: const Text("Upravit servis")),
 
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
 
         child: Column(
           children: [
-            DropdownButtonFormField<ServiceType>(
-              initialValue: selectedType,
+            _section(
+              child: DropdownButtonFormField<ServiceType>(
+                value: selectedType,
 
-              items: ServiceType.values.map((type) {
-                return DropdownMenuItem(value: type, child: Text(type.label));
-              }).toList(),
+                decoration: const InputDecoration(labelText: "Typ servisu"),
 
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    selectedType = value;
-                  });
-                }
-              },
+                items: ServiceType.values.map((type) {
+                  return DropdownMenuItem(value: type, child: Text(type.label));
+                }).toList(),
 
-              decoration: const InputDecoration(labelText: "Typ servisu"),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      selectedType = value;
+                    });
+                  }
+                },
+              ),
             ),
 
             if (selectedType == ServiceType.custom)
-              TextField(
-                controller: titleController,
+              _section(
+                child: TextField(
+                  controller: titleController,
 
-                decoration: const InputDecoration(labelText: "Název servisu"),
+                  decoration: const InputDecoration(labelText: "Název servisu"),
+                ),
               ),
 
-            TextField(
-              controller: kilometresController,
+            _section(
+              child: Column(
+                children: [
+                  TextField(
+                    controller: kilometresController,
 
-              keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.number,
 
-              decoration: const InputDecoration(labelText: "Kilometry"),
+                    decoration: const InputDecoration(
+                      labelText: "Kilometry",
+
+                      prefixIcon: Icon(Icons.speed),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: priceController,
+
+                    keyboardType: TextInputType.number,
+
+                    decoration: const InputDecoration(
+                      labelText: "Cena",
+
+                      prefixIcon: Icon(Icons.payments),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: noteController,
+
+                    decoration: const InputDecoration(
+                      labelText: "Poznámka",
+
+                      prefixIcon: Icon(Icons.note),
+                    ),
+                  ),
+                ],
+              ),
             ),
 
-            TextField(
-              controller: priceController,
+            _section(
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
 
-              keyboardType: TextInputType.number,
+                leading: const Icon(Icons.calendar_month),
 
-              decoration: const InputDecoration(labelText: "Cena"),
+                title: Text(
+                  "${selectedDate.day}.${selectedDate.month}.${selectedDate.year}",
+                ),
+
+                trailing: const Icon(Icons.edit),
+
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+
+                    initialDate: selectedDate,
+
+                    firstDate: DateTime(2000),
+
+                    lastDate: DateTime.now(),
+                  );
+
+                  if (date != null) {
+                    setState(() {
+                      selectedDate = date;
+                    });
+                  }
+                },
+              ),
             ),
 
-            TextField(
-              controller: noteController,
+            _section(
+              child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
 
-              decoration: const InputDecoration(labelText: "Poznámka"),
-            ),
+                title: const Text("Připomínka"),
 
-            SwitchListTile(
-              title: const Text("Připomínka"),
+                subtitle: const Text("Automaticky hlídat další servis"),
 
-              value: reminderEnabled,
+                value: reminderEnabled,
 
-              onChanged: (value) {
-                setState(() {
-                  reminderEnabled = value;
-                });
-              },
+                onChanged: (value) {
+                  setState(() {
+                    reminderEnabled = value;
+                  });
+                },
+              ),
             ),
 
             const SizedBox(height: 20),
 
-            FilledButton(onPressed: save, child: const Text("Uložit změny")),
+            SizedBox(
+              width: double.infinity,
+
+              height: 52,
+
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xff7B6EF6),
+
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+
+                onPressed: save,
+
+                child: const Text("Uložit změny"),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _section({required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        color: Colors.white,
+
+        borderRadius: BorderRadius.circular(22),
+      ),
+
+      child: child,
+    );
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+
+    kilometresController.dispose();
+
+    priceController.dispose();
+
+    noteController.dispose();
+
+    super.dispose();
   }
 }

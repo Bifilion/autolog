@@ -1,3 +1,5 @@
+import 'package:autolog/core/theme/app_theme.dart';
+import 'package:autolog/core/widgets/app_card.dart';
 import 'package:autolog/features/service/providers/service_provider.dart';
 import 'package:autolog/features/service/widgets/service_card.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,8 @@ class ServiceScreen extends ConsumerWidget {
     final servicesAsync = ref.watch(serviceProvider);
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
+
       appBar: AppBar(title: const Text("Servis")),
 
       body: servicesAsync.when(
@@ -26,26 +30,88 @@ class ServiceScreen extends ConsumerWidget {
               .where((service) => service.carId == int.parse(carId))
               .toList();
 
-          return carServices.isEmpty
-              ? const Center(child: Text("Zatím žádný servis"))
-              : ListView.builder(
-                  itemCount: carServices.length,
+          if (carServices.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.all(16),
 
-                  itemBuilder: (context, index) {
-                    final service = carServices[index];
+              child: AppCard(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
 
-                    return ServiceCard(service: service);
-                  },
-                );
+                  children: [
+                    Container(
+                      width: 60,
+
+                      height: 60,
+
+                      decoration: BoxDecoration(
+                        color: const Color(0xff7B6EF6).withOpacity(.15),
+
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+
+                      child: const Icon(
+                        Icons.build_rounded,
+
+                        size: 32,
+
+                        color: Color(0xff7B6EF6),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    const Text(
+                      "Žádný servis",
+
+                      style: TextStyle(
+                        fontSize: 18,
+
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    Text(
+                      "Přidej první servisní záznam",
+
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+
+            itemCount: carServices.length,
+
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+
+            itemBuilder: (context, index) {
+              final service = carServices[index];
+
+              return ServiceCard(service: service);
+            },
+          );
         },
       ),
 
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xff7B6EF6),
+
+        foregroundColor: Colors.white,
+
         onPressed: () {
           context.push('/service/$carId/add');
         },
 
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+
+        label: const Text("Servis"),
       ),
     );
   }

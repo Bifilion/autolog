@@ -1,37 +1,24 @@
+import 'package:autolog/core/theme/app_theme.dart';
 import 'package:autolog/features/cars/providers/car_provider.dart';
 import 'package:autolog/features/cars/widgets/dashboard_header.dart';
 import 'package:autolog/features/cars/widgets/last_fuel_card.dart';
 import 'package:autolog/features/cars/widgets/last_service_card.dart';
 import 'package:autolog/features/cars/widgets/quick_action_card.dart';
 import 'package:autolog/features/cars/widgets/reminder_card.dart';
-import 'package:autolog/features/cars/widgets/statistics_card.dart';
-import 'package:autolog/features/expenses/models/expense_type.dart';
-import 'package:autolog/features/expenses/providers/expense_stats_provider.dart';
 import 'package:autolog/features/statistics/widgets/cost_overview_card.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class CarDashboardScreen extends ConsumerWidget {
-  final String carId;
+  final int carId;
 
   const CarDashboardScreen({super.key, required this.carId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final carIdInt = int.parse(carId);
-
-    final carFuture = ref.read(carProvider.notifier).getCarById(carIdInt);
-
-    final fuelCost = ref.watch(
-      expenseByTypeProvider((carId: carIdInt, type: ExpenseType.fuel)),
-    );
-
-    final serviceCost = ref.watch(
-      expenseByTypeProvider((carId: carIdInt, type: ExpenseType.service)),
-    );
-
-    final otherCost = ref.watch(totalOtherCostProvider(carIdInt));
+    final carFuture = ref.read(carProvider.notifier).getCarById(carId);
 
     return FutureBuilder(
       future: carFuture,
@@ -47,34 +34,35 @@ class CarDashboardScreen extends ConsumerWidget {
 
         if (car == null) {
           return Scaffold(
+            backgroundColor: AppTheme.background,
+
             appBar: AppBar(title: const Text("Auto nenalezeno")),
 
             body: const Center(child: Text("Auto nenalezeno")),
           );
         }
+
         return Scaffold(
           appBar: AppBar(title: Text("${car.brand} ${car.model}")),
 
-          body: Padding(
-            padding: EdgeInsets.all(16),
-            child: ListView(
-              children: [
-                DashboardHeader(car: car),
+          body: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
 
-                const SizedBox(height: 20),
+            children: [
+              DashboardHeader(car: car),
 
-                const Text(
-                  "Rychlé akce",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
+              const SizedBox(height: 24),
 
-                const SizedBox(height: 12),
+              _sectionTitle("Rychlé akce"),
 
-                Row(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
                   children: [
                     Expanded(
                       child: QuickActionCard(
                         icon: Icons.build,
+
                         title: "Servis",
 
                         onTap: () {
@@ -83,11 +71,12 @@ class CarDashboardScreen extends ConsumerWidget {
                       ),
                     ),
 
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
 
                     Expanded(
                       child: QuickActionCard(
                         icon: Icons.local_gas_station,
+
                         title: "Tankování",
 
                         onTap: () {
@@ -96,12 +85,13 @@ class CarDashboardScreen extends ConsumerWidget {
                       ),
                     ),
 
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
 
                     Expanded(
                       child: QuickActionCard(
                         icon: Icons.notifications,
-                        title: "Připomínka",
+
+                        title: "Připomínky",
 
                         onTap: () {
                           context.push('/reminder/$carId/add');
@@ -110,35 +100,45 @@ class CarDashboardScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                ReminderCard(
-                  carId: carIdInt,
-                  currentKilometers: car.kilometers,
-                ),
+              ),
 
-                LastServiceCard(carId: carIdInt),
+              const SizedBox(height: 24),
 
-                LastFuelCard(carId: carIdInt),
+              ReminderCard(carId: carId, currentKilometers: car.kilometers),
 
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.payments),
+              const SizedBox(height: 20),
 
-                    title: const Text("Náklady"),
+              _sectionTitle("Poslední servis"),
 
-                    trailing: const Icon(Icons.chevron_right),
+              LastServiceCard(carId: carId),
 
-                    onTap: () {
-                      context.push('/expenses/$carId/history');
-                    },
-                  ),
-                ),
+              const SizedBox(height: 20),
 
-                CostOverviewCard(carId: carIdInt),
-              ],
-            ),
+              _sectionTitle("Poslední tankování"),
+
+              LastFuelCard(carId: carId),
+
+              const SizedBox(height: 20),
+
+              CostOverviewCard(carId: carId),
+
+              const SizedBox(height: 20),
+            ],
           ),
         );
       },
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 10),
+
+      child: Text(
+        title,
+
+        style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
+      ),
     );
   }
 }

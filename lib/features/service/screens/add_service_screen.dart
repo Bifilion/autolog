@@ -1,3 +1,4 @@
+import 'package:autolog/core/theme/app_theme.dart';
 import 'package:autolog/features/expenses/models/expense.dart';
 import 'package:autolog/features/expenses/models/expense_type.dart';
 import 'package:autolog/features/expenses/providers/expense_provider.dart';
@@ -35,6 +36,7 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
   ServiceType selectedType = ServiceType.oil;
 
   DateTime selectedDate = DateTime.now();
+
   bool reminderEnabled = true;
 
   @override
@@ -84,6 +86,7 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
           ? int.tryParse(intervalMonthsController.text)
           : null,
     );
+
     await ref.read(serviceProvider.notifier).addService(service);
 
     await ref
@@ -91,9 +94,13 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
         .addExpense(
           Expense(
             carId: service.carId,
+
             date: service.date,
+
             amount: service.price,
+
             type: ExpenseType.service,
+
             title: service.displayName,
           ),
         );
@@ -134,16 +141,18 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
+
       appBar: AppBar(title: const Text("Přidat servis")),
 
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
 
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              DropdownButtonFormField<ServiceType>(
-                initialValue: selectedType,
+        child: Column(
+          children: [
+            _section(
+              child: DropdownButtonFormField<ServiceType>(
+                value: selectedType,
 
                 decoration: const InputDecoration(labelText: "Typ servisu"),
 
@@ -165,40 +174,65 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
                   }
                 },
               ),
-              if (selectedType == ServiceType.custom)
-                TextField(
+            ),
+
+            if (selectedType == ServiceType.custom)
+              _section(
+                child: TextField(
                   controller: titleController,
 
-                  decoration: const InputDecoration(
-                    labelText: "Název vlastního servisu",
-                  ),
+                  decoration: const InputDecoration(labelText: "Název servisu"),
                 ),
-
-              TextField(
-                controller: kilometresController,
-
-                keyboardType: TextInputType.number,
-
-                decoration: const InputDecoration(labelText: "Kilometry"),
               ),
 
-              TextField(
-                controller: priceController,
+            _section(
+              child: Column(
+                children: [
+                  TextField(
+                    controller: kilometresController,
 
-                keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.number,
 
-                decoration: const InputDecoration(labelText: "Cena"),
+                    decoration: const InputDecoration(
+                      labelText: "Kilometry",
+
+                      prefixIcon: Icon(Icons.speed),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: priceController,
+
+                    keyboardType: TextInputType.number,
+
+                    decoration: const InputDecoration(
+                      labelText: "Cena",
+
+                      prefixIcon: Icon(Icons.payments),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: noteController,
+
+                    decoration: const InputDecoration(
+                      labelText: "Poznámka",
+
+                      prefixIcon: Icon(Icons.note),
+                    ),
+                  ),
+                ],
               ),
+            ),
 
-              TextField(
-                controller: noteController,
+            _section(
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
 
-                decoration: const InputDecoration(labelText: "Poznámka"),
-              ),
-
-              const SizedBox(height: 20),
-
-              ListTile(
                 leading: const Icon(Icons.calendar_month),
 
                 title: Text(
@@ -225,54 +259,109 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
                   }
                 },
               ),
+            ),
 
-              SwitchListTile(
-                title: const Text("Vytvořit připomínku"),
+            _section(
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
 
-                subtitle: const Text(
-                  "Automaticky vytvoří další servisní upozornění",
-                ),
+                    title: const Text("Vytvořit připomínku"),
 
-                value: reminderEnabled,
+                    subtitle: const Text("Automatické servisní upozornění"),
 
-                onChanged: (value) {
-                  setState(() {
-                    reminderEnabled = value;
-                  });
-                },
+                    value: reminderEnabled,
+
+                    onChanged: (value) {
+                      setState(() {
+                        reminderEnabled = value;
+                      });
+                    },
+                  ),
+
+                  if (reminderEnabled) ...[
+                    TextField(
+                      controller: intervalKmController,
+
+                      keyboardType: TextInputType.number,
+
+                      decoration: const InputDecoration(
+                        labelText: "Interval km",
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    TextField(
+                      controller: intervalMonthsController,
+
+                      keyboardType: TextInputType.number,
+
+                      decoration: const InputDecoration(
+                        labelText: "Interval měsíce",
+                      ),
+                    ),
+                  ],
+                ],
               ),
+            ),
 
-              if (reminderEnabled) ...[
-                TextField(
-                  controller: intervalKmController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: "Interval (km)"),
-                ),
+            const SizedBox(height: 20),
 
-                TextField(
-                  controller: intervalMonthsController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: "Interval (měsíce)",
+            SizedBox(
+              width: double.infinity,
+
+              height: 52,
+
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xff7B6EF6),
+
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-              ],
 
-              FilledButton(onPressed: saveService, child: const Text("Uložit")),
-            ],
-          ),
+                onPressed: saveService,
+
+                child: const Text("Uložit servis"),
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _section({required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        color: Colors.white,
+
+        borderRadius: BorderRadius.circular(22),
+      ),
+
+      child: child,
     );
   }
 
   @override
   void dispose() {
     titleController.dispose();
+
     kilometresController.dispose();
+
     priceController.dispose();
+
     noteController.dispose();
+
     intervalKmController.dispose();
+
     intervalMonthsController.dispose();
 
     super.dispose();

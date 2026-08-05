@@ -1,4 +1,5 @@
 import 'package:autolog/features/cars/providers/car_provider.dart';
+import 'package:autolog/features/cars/widgets/car_card.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,7 +13,7 @@ class HomeScreen extends ConsumerWidget {
     final carsState = ref.watch(carProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Moje auta')),
+      appBar: AppBar(title: const Text("Moje garáž")),
 
       body: carsState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -21,37 +22,37 @@ class HomeScreen extends ConsumerWidget {
 
         data: (cars) {
           if (cars.isEmpty) {
-            return const Center(child: Text("Nemáš žádné auto"));
+            return const Center(child: Text("Nemáš žádné vozidlo"));
           }
 
           return ListView.builder(
+            padding: const EdgeInsets.all(12),
+
             itemCount: cars.length,
 
             itemBuilder: (context, index) {
               final car = cars[index];
 
-              return Card(
-                child: ListTile(
-                  title: Text("${car.brand} ${car.model}"),
+              return CarCard(
+                car: car,
 
-                  subtitle: Text("${car.year} • ${car.kilometers} km"),
-
-                  onTap: () {
-                    context.push('/car/${car.id}');
-                  },
-                ),
+                onTap: () {
+                  context.push("/car/${car.id}");
+                },
               );
             },
           );
         },
       ),
 
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          context.push('/add-car');
+          context.push("/add-car");
         },
 
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+
+        label: const Text("Přidat vozidlo"),
       ),
     );
   }

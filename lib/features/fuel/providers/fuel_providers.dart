@@ -1,5 +1,5 @@
 import 'package:autolog/core/providers/repository_providers.dart';
-import 'package:autolog/features/expenses/providers/expense_provider.dart';
+
 import 'package:autolog/features/fuel/models/fuel_record.dart';
 import 'package:autolog/features/fuel/providers/fuel_stats_provider.dart';
 import 'package:autolog/features/fuel/repositories/fuel_repository.dart';
@@ -42,6 +42,17 @@ class FuelNotifier extends AsyncNotifier<List<FuelRecord>> {
     await repo.remove(fuel.id);
 
     state = AsyncData(await repo.getAll());
+  }
+
+  Future<void> updateFuel(FuelRecord fuel) async {
+    final repo = await repository;
+
+    await repo.update(fuel);
+
+    state = AsyncData(await repo.getAll());
+
+    ref.invalidate(totalFuelCostProvider(fuel.carId));
+    ref.invalidate(latestFuelProvider(fuel.carId));
   }
 
   Future<List<FuelRecord>> getByCar(int carId) async {
