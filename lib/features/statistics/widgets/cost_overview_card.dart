@@ -22,15 +22,8 @@ class CostOverviewCard extends ConsumerWidget {
       onTap: () {
         context.push("/statistics/$carId");
       },
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
 
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xff7B6EF6), Color(0xff5E4FE0)],
-        ),
-      ),
+      padding: const EdgeInsets.all(16),
 
       child: statistics.when(
         loading: () => const SizedBox(
@@ -38,94 +31,86 @@ class CostOverviewCard extends ConsumerWidget {
           child: Center(child: CircularProgressIndicator()),
         ),
 
-        error: (error, stack) => const SizedBox(
+        error: (_, _) => const SizedBox(
           height: 180,
           child: Center(child: Text("Chyba načtení nákladů")),
         ),
 
         data: (data) {
-          final total = data.totalCost;
+          final total = data.totalCost.toDouble();
 
-          final fuelPercent = total == 0 ? 0.0 : data.fuelCost / total;
+          final fuelPercent = total == 0
+              ? 0.0
+              : data.fuelCost.toDouble() / total;
 
-          final servicePercent = total == 0 ? 0.0 : data.serviceCost / total;
+          final servicePercent = total == 0
+              ? 0.0
+              : data.serviceCost.toDouble() / total;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+
             children: [
-              // HEADER
               Row(
                 children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(
-                      Icons.account_balance_wallet_rounded,
-                      color: Colors.white,
-                    ),
-                  ),
+                  _iconBox(context, Icons.bar_chart_rounded),
 
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 12),
 
                   const Expanded(
                     child: Text(
-                      "Přehled nákladů",
+                      "Statistiky nákladů",
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
 
-                  const Icon(Icons.chevron_right, color: Colors.white),
+                  const Icon(Icons.chevron_right),
                 ],
-              ),
-
-              const SizedBox(height: 26),
-
-              // TOTAL COST
-              Text(
-                "${total.toStringAsFixed(0)} Kč",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 4),
-
-              const Text(
-                "Celkové náklady",
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-
-              const SizedBox(height: 30),
-
-              // FUEL
-              _costBar(
-                icon: Icons.local_gas_station,
-                title: "Palivo",
-                value: data.fuelCost,
-                percent: fuelPercent,
-                color: Colors.amberAccent,
               ),
 
               const SizedBox(height: 20),
 
-              // SERVICE
+              const Text(
+                "Celkové výdaje",
+                style: TextStyle(color: Colors.grey),
+              ),
+
+              const SizedBox(height: 4),
+
+              Text(
+                "${total.toStringAsFixed(0)} Kč",
+
+                style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
               _costBar(
+                context,
+                icon: Icons.local_gas_station,
+                title: "Palivo",
+                value: data.fuelCost,
+                percent: fuelPercent,
+                color: Colors.deepPurple,
+              ),
+
+              const SizedBox(height: 18),
+
+              _costBar(
+                context,
                 icon: Icons.build,
                 title: "Servis",
                 value: data.serviceCost,
                 percent: servicePercent,
-                color: Colors.lightBlueAccent,
+                color: Colors.orange,
               ),
+              const SizedBox(height: 18),
             ],
           );
         },
@@ -133,46 +118,62 @@ class CostOverviewCard extends ConsumerWidget {
     );
   }
 
-  Widget _costBar({
+  Widget _iconBox(BuildContext context, IconData icon) {
+    return Container(
+      width: 46,
+
+      height: 46,
+
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withOpacity(.15),
+
+        borderRadius: BorderRadius.circular(14),
+      ),
+
+      child: Icon(icon, color: Theme.of(context).colorScheme.primary),
+    );
+  }
+
+  Widget _costBar(
+    BuildContext context, {
+
     required IconData icon,
+
     required String title,
+
     required double value,
+
     required double percent,
+
     required Color color,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+
       children: [
         Row(
           children: [
-            Icon(icon, size: 20, color: Colors.white),
+            Icon(icon, size: 20, color: color),
 
             const SizedBox(width: 8),
 
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
 
             Text(
               "${value.toStringAsFixed(0)} Kč",
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(width: 8),
 
             Text(
               "${(percent * 100).round()} %",
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              style: TextStyle(color: Colors.grey.shade600),
             ),
           ],
         ),
@@ -181,10 +182,14 @@ class CostOverviewCard extends ConsumerWidget {
 
         ClipRRect(
           borderRadius: BorderRadius.circular(20),
+
           child: LinearProgressIndicator(
             value: percent,
+
             minHeight: 8,
-            backgroundColor: Colors.white24,
+
+            backgroundColor: Colors.grey.shade300,
+
             valueColor: AlwaysStoppedAnimation(color),
           ),
         ),

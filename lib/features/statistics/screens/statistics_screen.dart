@@ -2,6 +2,10 @@ import 'package:autolog/features/statistics/models/statistics_filter.dart';
 import 'package:autolog/features/statistics/providers/statistics_provider.dart';
 import 'package:autolog/features/statistics/widgets/expense_pie_chart.dart';
 import 'package:autolog/features/statistics/widgets/monthly_cost_chart.dart';
+import 'package:autolog/features/statistics/widgets/statistics_metric_card.dart';
+import 'package:autolog/features/statistics/widgets/statistics_period_selector.dart';
+import 'package:autolog/features/statistics/widgets/statistics_summary_card.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,7 +19,7 @@ class StatisticsScreen extends ConsumerStatefulWidget {
 }
 
 class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
-  StatisticsPeriod selectedPeriod = StatisticsPeriod.all;
+  StatisticsPeriod selectedPeriod = StatisticsPeriod.last12Months;
 
   @override
   Widget build(BuildContext context) {
@@ -34,75 +38,90 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
         child: statistics.when(
           loading: () => const Center(child: CircularProgressIndicator()),
 
-          error: (error, stack) =>
-              Center(child: Text("Chyba načtení statistik")),
+          error: (error, stack) => Center(child: Text("Chyba: $error")),
 
           data: (data) {
             return ListView(
+              physics: const BouncingScrollPhysics(),
+
               children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
+                StatisticsSummaryCard(
+                  total: data.totalCost,
 
-                    child: Column(
-                      children: [
-                        const Text("Celkové náklady"),
+                  fuel: data.fuelCost,
 
-                        const SizedBox(height: 8),
-
-                        Text(
-                          "${data.totalCost.toStringAsFixed(0)} Kč",
-
-                          style: const TextStyle(
-                            fontSize: 32,
-
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  service: data.serviceCost,
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
+                StatisticsPeriodSelector(
+                  selected: selectedPeriod,
 
-                    child: DropdownButtonFormField<StatisticsPeriod>(
-                      value: selectedPeriod,
+                  onChanged: (period) {
+                    setState(() {
+                      selectedPeriod = period;
+                    });
+                  },
+                ),
 
-                      decoration: const InputDecoration(
-                        labelText: "Období",
+                const SizedBox(height: 16),
 
-                        border: OutlineInputBorder(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: StatisticsMetricCard(
+                        icon: Icons.speed,
+
+                        title: "Cena / km",
+
+                        value: "${data.costPerKm.toStringAsFixed(2)} Kč",
                       ),
-
-                      items: StatisticsPeriod.values
-                          .map(
-                            (period) => DropdownMenuItem(
-                              value: period,
-
-                              child: Text(period.label),
-                            ),
-                          )
-                          .toList(),
-
-                      onChanged: (value) {
-                        if (value == null) {
-                          return;
-                        }
-
-                        setState(() {
-                          selectedPeriod = value;
-                        });
-                      },
                     ),
-                  ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: StatisticsMetricCard(
+                        icon: Icons.build,
+
+                        title: "Servisů",
+
+                        value: "${data.serviceCount}",
+                      ),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: StatisticsMetricCard(
+                        icon: Icons.local_gas_station,
+
+                        title: "Tankování",
+
+                        value: "${data.fuelCount}",
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: StatisticsMetricCard(
+                        icon: Icons.trending_up,
+
+                        title: "Největší",
+
+                        value: data.biggestExpense,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
 
                 ExpensePieChart(
                   fuelCost: data.fuelCost,
@@ -110,58 +129,14 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                   serviceCost: data.serviceCost,
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
                 MonthlyCostChart(data: data.monthlyCosts),
 
-                const SizedBox(height: 12),
-
-                _statCard(
-                  icon: Icons.local_gas_station,
-
-                  title: "Palivo",
-
-                  value: data.fuelCost,
-
-                  color: Colors.green,
-                ),
-
-                _statCard(
-                  icon: Icons.build,
-
-                  title: "Servis",
-
-                  value: data.serviceCost,
-
-                  color: Colors.orange,
-                ),
+                const SizedBox(height: 30),
               ],
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _statCard({
-    required IconData icon,
-
-    required String title,
-
-    required double value,
-
-    Color? color,
-  }) {
-    return Card(
-      child: ListTile(
-        leading: Icon(icon, color: color),
-
-        title: Text(title),
-
-        trailing: Text(
-          "${value.toStringAsFixed(0)} Kč",
-
-          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
     );

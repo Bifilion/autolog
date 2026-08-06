@@ -1,4 +1,3 @@
-import 'package:autolog/core/widgets/app_card.dart';
 import 'package:autolog/features/reminders/models/reminder.dart';
 import 'package:autolog/features/reminders/models/reminder_type.dart';
 import 'package:autolog/features/reminders/providers/reminder_provider.dart';

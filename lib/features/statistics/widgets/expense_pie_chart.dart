@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-class ExpensePieChart extends StatelessWidget {
+class ExpensePieChart extends StatefulWidget {
   final double fuelCost;
   final double serviceCost;
 
@@ -12,89 +12,171 @@ class ExpensePieChart extends StatelessWidget {
   });
 
   @override
+  State<ExpensePieChart> createState() => _ExpensePieChartState();
+}
+
+class _ExpensePieChartState extends State<ExpensePieChart> {
+  int touchedIndex = -1;
+
+  @override
   Widget build(BuildContext context) {
-    final total = fuelCost + serviceCost;
+    final total = widget.fuelCost + widget.serviceCost;
 
     if (total == 0) {
-      return const Card(
-        child: Padding(
+      return Card(
+        child: const Padding(
           padding: EdgeInsets.all(20),
+
           child: Center(child: Text("Žádné náklady")),
         ),
       );
     }
 
     return Card(
+      elevation: 0,
+
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+
       child: Padding(
         padding: const EdgeInsets.all(20),
 
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
           children: [
-            Text(
-              "Rozdělení nákladů",
-              style: Theme.of(context).textTheme.titleLarge,
+            Row(
+              children: [
+                Container(
+                  width: 44,
+
+                  height: 44,
+
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(.15),
+
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+
+                  child: Icon(
+                    Icons.pie_chart_rounded,
+
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                const Text(
+                  "Rozdělení nákladů",
+
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
 
             SizedBox(
-              height: 220,
+              height: 260,
 
               child: PieChart(
                 PieChartData(
-                  sectionsSpace: 3,
-
                   centerSpaceRadius: 45,
 
-                  sections: [
-                    PieChartSectionData(
-                      value: fuelCost,
+                  sectionsSpace: 4,
 
-                      title:
-                          "${((fuelCost / total) * 100).toStringAsFixed(0)} %",
+                  pieTouchData: PieTouchData(
+                    touchCallback: (event, response) {
+                      setState(() {
+                        if (!event.isInterestedForInteractions ||
+                            response == null ||
+                            response.touchedSection == null) {
+                          touchedIndex = -1;
+                        } else {
+                          touchedIndex =
+                              response.touchedSection!.touchedSectionIndex;
+                        }
+                      });
+                    },
+                  ),
+
+                  sections: [
+                    _section(
+                      value: widget.fuelCost,
+
+                      title: "Palivo",
+
+                      percent: widget.fuelCost / total,
 
                       color: Colors.green,
 
-                      radius: 80,
-
-                      titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      index: 0,
                     ),
 
-                    PieChartSectionData(
-                      value: serviceCost,
+                    _section(
+                      value: widget.serviceCost,
 
-                      title:
-                          "${((serviceCost / total) * 100).toStringAsFixed(0)} %",
+                      title: "Servis",
+
+                      percent: widget.serviceCost / total,
 
                       color: Colors.orange,
 
-                      radius: 80,
-
-                      titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      index: 1,
                     ),
                   ],
                 ),
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Center(
+              child: Column(
+                children: [
+                  Text(
+                    "${total.toStringAsFixed(0)} Kč",
 
-              children: [
-                _legend(Colors.green, "Palivo", fuelCost),
+                    style: const TextStyle(
+                      fontSize: 24,
 
-                const SizedBox(width: 20),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
 
-                _legend(Colors.orange, "Servis", serviceCost),
-              ],
+                  Text(
+                    "Celkové náklady",
+
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            _legend(
+              color: Colors.green,
+
+              title: "Palivo",
+
+              value: widget.fuelCost,
+
+              percent: widget.fuelCost / total,
+            ),
+
+            const SizedBox(height: 12),
+
+            _legend(
+              color: Colors.orange,
+
+              title: "Servis",
+
+              value: widget.serviceCost,
+
+              percent: widget.serviceCost / total,
             ),
           ],
         ),
@@ -102,20 +184,80 @@ class ExpensePieChart extends StatelessWidget {
     );
   }
 
-  Widget _legend(Color color, String title, double value) {
+  PieChartSectionData _section({
+    required double value,
+
+    required String title,
+
+    required double percent,
+
+    required Color color,
+
+    required int index,
+  }) {
+    final isTouched = index == touchedIndex;
+
+    return PieChartSectionData(
+      value: value,
+
+      color: color,
+
+      radius: isTouched ? 95 : 82,
+
+      title: "${(percent * 100).round()}%",
+
+      titleStyle: const TextStyle(
+        color: Colors.white,
+
+        fontWeight: FontWeight.bold,
+
+        fontSize: 14,
+      ),
+    );
+  }
+
+  Widget _legend({
+    required Color color,
+
+    required String title,
+
+    required double value,
+
+    required double percent,
+  }) {
     return Row(
       children: [
         Container(
-          width: 12,
+          width: 14,
 
-          height: 12,
+          height: 14,
 
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
 
-        const SizedBox(width: 6),
+        const SizedBox(width: 10),
 
-        Text("$title ${value.toStringAsFixed(0)} Kč"),
+        Expanded(
+          child: Text(
+            title,
+
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+
+        Text(
+          "${value.toStringAsFixed(0)} Kč",
+
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+
+        const SizedBox(width: 8),
+
+        Text(
+          "${(percent * 100).round()} %",
+
+          style: TextStyle(color: Colors.grey.shade600),
+        ),
       ],
     );
   }

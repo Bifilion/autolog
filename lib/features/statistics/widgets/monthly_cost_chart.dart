@@ -10,10 +10,15 @@ class MonthlyCostChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
-      return const Card(
+      return Card(
         child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Center(child: Text("Žádné údaje pro graf")),
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: Text(
+              "Žádné údaje pro graf",
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
         ),
       );
     }
@@ -21,56 +26,90 @@ class MonthlyCostChart extends StatelessWidget {
     final maxValue = data.map((e) => e.cost).reduce((a, b) => a > b ? a : b);
 
     return Card(
+      elevation: 0,
+
+      margin: EdgeInsets.zero,
+
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-            Text(
-              "Vývoj nákladů",
-              style: Theme.of(context).textTheme.titleLarge,
+            Row(
+              children: [
+                Container(
+                  width: 44,
+
+                  height: 44,
+
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(.15),
+
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+
+                  child: Icon(
+                    Icons.bar_chart_rounded,
+
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                const Expanded(
+                  child: Text(
+                    "Vývoj nákladů",
+
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             SizedBox(
-              height: 250,
+              height: 260,
 
               child: BarChart(
                 BarChartData(
-                  maxY: maxValue * 1.2,
+                  maxY: maxValue == 0 ? 100 : maxValue * 1.25,
 
                   alignment: BarChartAlignment.spaceAround,
 
-                  barTouchData: BarTouchData(enabled: true),
+                  gridData: FlGridData(show: true, drawVerticalLine: false),
+
+                  borderData: FlBorderData(show: false),
+
+                  barTouchData: BarTouchData(
+                    enabled: true,
+
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        return BarTooltipItem(
+                          "${data[groupIndex].month}\n"
+                          "${rod.toY.toStringAsFixed(0)} Kč",
+
+                          const TextStyle(
+                            fontWeight: FontWeight.bold,
+
+                            color: Colors.white,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
 
                   titlesData: FlTitlesData(
                     leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 45,
-                      ),
-                    ),
-
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-
-                        getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
-
-                          if (index < 0 || index >= data.length) {
-                            return const SizedBox();
-                          }
-
-                          return Text(
-                            data[index].month,
-                            style: const TextStyle(fontSize: 10),
-                          );
-                        },
-                      ),
+                      sideTitles: SideTitles(showTitles: false),
                     ),
 
                     rightTitles: const AxisTitles(
@@ -79,6 +118,32 @@ class MonthlyCostChart extends StatelessWidget {
 
                     topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
+                    ),
+
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+
+                        reservedSize: 32,
+
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+
+                          if (index < 0 || index >= data.length) {
+                            return const SizedBox();
+                          }
+
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8),
+
+                            child: Text(
+                              data[index].month,
+
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
 
@@ -92,7 +157,19 @@ class MonthlyCostChart extends StatelessWidget {
 
                           width: 18,
 
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(8),
+
+                          gradient: LinearGradient(
+                            colors: [
+                              Theme.of(context).colorScheme.primary,
+
+                              Theme.of(context).colorScheme.secondary,
+                            ],
+
+                            begin: Alignment.bottomCenter,
+
+                            end: Alignment.topCenter,
+                          ),
                         ),
                       ],
                     );
