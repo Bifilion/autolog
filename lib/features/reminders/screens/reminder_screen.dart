@@ -1,3 +1,4 @@
+import 'package:autolog/core/widgets/app_card.dart';
 import 'package:autolog/features/cars/providers/car_provider.dart';
 import 'package:autolog/features/reminders/models/reminder_type.dart';
 import 'package:autolog/features/reminders/providers/reminder_provider.dart';
@@ -9,6 +10,20 @@ class ReminderScreen extends ConsumerWidget {
   final int carId;
 
   const ReminderScreen({super.key, required this.carId});
+
+  Widget _iconBox(BuildContext context, IconData icon, Color color) {
+    return Container(
+      width: 46,
+      height: 46,
+
+      decoration: BoxDecoration(
+        color: color.withOpacity(.15),
+        borderRadius: BorderRadius.circular(15),
+      ),
+
+      child: Icon(icon, color: color),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -51,6 +66,8 @@ class ReminderScreen extends ConsumerWidget {
               }
 
               return ListView.builder(
+                padding: const EdgeInsets.all(12),
+
                 itemCount: list.length,
 
                 itemBuilder: (context, index) {
@@ -65,74 +82,127 @@ class ReminderScreen extends ConsumerWidget {
 
                   final days = reminder.timeStatus(DateTime.now());
 
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
+                  return AppCard(
+                    margin: const EdgeInsets.only(bottom: 10),
 
-                    child: ListTile(
-                      leading: Icon(reminder.type.icon, color: color),
+                    child: Row(
+                      children: [
+                        _iconBox(context, reminder.type.icon, color),
 
-                      title: Text(reminder.title ?? reminder.type.label),
+                        const SizedBox(width: 14),
 
-                      subtitle: Text(
-                        [km, days].where((e) => e.isNotEmpty).join("\n"),
-                      ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
 
-                      trailing: PopupMenuButton(
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(value: "edit", child: Text("Upravit")),
+                            children: [
+                              Text(
+                                reminder.title ?? reminder.type.label,
 
-                          PopupMenuItem(value: "delete", child: Text("Smazat")),
-                        ],
+                                style: const TextStyle(
+                                  fontSize: 16,
 
-                        onSelected: (value) async {
-                          if (value == "edit") {
-                            context.push("/reminder/edit", extra: reminder);
-                          }
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
 
-                          if (value == "delete") {
-                            final confirm = await showDialog<bool>(
-                              context: context,
+                              const SizedBox(height: 6),
 
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text("Smazat připomínku?"),
+                              if (km.isNotEmpty)
+                                Text(
+                                  km,
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
 
-                                  content: Text(
-                                    reminder.title ?? reminder.type.label,
-                                  ),
+                              if (days.isNotEmpty)
+                                Text(
+                                  days,
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                            ],
+                          ),
+                        ),
 
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context, false);
-                                      },
+                        PopupMenuButton(
+                          icon: const Icon(Icons.more_vert),
 
-                                      child: const Text("Zrušit"),
-                                    ),
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                              value: "edit",
 
-                                    FilledButton(
-                                      onPressed: () {
-                                        Navigator.pop(context, true);
-                                      },
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit),
 
-                                      child: const Text("Smazat"),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
+                                  SizedBox(width: 10),
 
-                            if (confirm == true) {
-                              await ref
-                                  .read(reminderProvider.notifier)
-                                  .removeReminder(reminder);
+                                  Text("Upravit"),
+                                ],
+                              ),
+                            ),
+
+                            PopupMenuItem(
+                              value: "delete",
+
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete_outline),
+
+                                  SizedBox(width: 10),
+
+                                  Text("Smazat"),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          onSelected: (value) async {
+                            if (value == "edit") {
+                              context.push("/reminder/edit", extra: reminder);
                             }
-                          }
-                        },
-                      ),
+
+                            if (value == "delete") {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("Smazat připomínku?"),
+
+                                    content: Text(
+                                      reminder.title ?? reminder.type.label,
+                                    ),
+
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context, false);
+                                        },
+
+                                        child: const Text("Zrušit"),
+                                      ),
+
+                                      FilledButton(
+                                        onPressed: () {
+                                          Navigator.pop(context, true);
+                                        },
+
+                                        child: const Text("Smazat"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+
+                              if (confirm == true) {
+                                await ref
+                                    .read(reminderProvider.notifier)
+                                    .removeReminder(reminder);
+                              }
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   );
                 },

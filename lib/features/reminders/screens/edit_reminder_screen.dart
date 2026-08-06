@@ -1,5 +1,7 @@
-import 'package:autolog/features/reminders/providers/reminder_provider.dart';
+import 'package:autolog/core/widgets/app_card.dart';
 import 'package:autolog/features/reminders/models/reminder.dart';
+import 'package:autolog/features/reminders/models/reminder_type.dart';
+import 'package:autolog/features/reminders/providers/reminder_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,13 +21,19 @@ class EditReminderScreen extends ConsumerStatefulWidget {
 }
 
 class _EditReminderScreenState extends ConsumerState<EditReminderScreen> {
-  late TextEditingController kmController;
+  late ReminderType selectedType;
 
-  late TextEditingController daysController;
+  late final TextEditingController titleController;
+  late final TextEditingController kmController;
+  late final TextEditingController daysController;
 
   @override
   void initState() {
     super.initState();
+
+    selectedType = widget.reminder.type;
+
+    titleController = TextEditingController(text: widget.reminder.title ?? "");
 
     kmController = TextEditingController(
       text: widget.reminder.intervalKilometers?.toString() ?? "",
@@ -36,11 +44,15 @@ class _EditReminderScreenState extends ConsumerState<EditReminderScreen> {
     );
   }
 
-  void save() {
+  Future<void> save() async {
     final updated = Reminder(
       carId: widget.carId,
 
-      type: widget.reminder.type,
+      type: selectedType,
+
+      title: titleController.text.isEmpty
+          ? selectedType.label
+          : titleController.text,
 
       intervalKilometers: int.tryParse(kmController.text),
 
@@ -55,9 +67,21 @@ class _EditReminderScreenState extends ConsumerState<EditReminderScreen> {
 
     updated.id = widget.reminder.id;
 
-    ref.read(reminderProvider.notifier).updateReminder(updated);
+    await ref.read(reminderProvider.notifier).updateReminder(updated);
 
-    context.pop();
+    if (mounted) {
+      context.pop();
+    }
+  }
+
+  Widget _fieldCard({required Widget child}) {
+    return AppCard(
+      margin: EdgeInsets.zero,
+
+      padding: const EdgeInsets.all(12),
+
+      child: child,
+    );
   }
 
   @override
@@ -68,30 +92,119 @@ class _EditReminderScreenState extends ConsumerState<EditReminderScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16),
 
-        child: Column(
-          children: [
-            TextField(
-              controller: kmController,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _fieldCard(
+                child: DropdownButtonFormField<ReminderType>(
+                  value: selectedType,
 
-              keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: "Typ připomínky",
 
-              decoration: const InputDecoration(labelText: "Interval km"),
-            ),
+                    prefixIcon: Icon(Icons.notifications),
+                  ),
 
-            TextField(
-              controller: daysController,
+                  items: ReminderType.values.map((type) {
+                    return DropdownMenuItem(
+                      value: type,
 
-              keyboardType: TextInputType.number,
+                      child: Row(
+                        children: [
+                          Icon(type.icon),
 
-              decoration: const InputDecoration(labelText: "Interval dní"),
-            ),
+                          const SizedBox(width: 10),
 
-            const SizedBox(height: 20),
+                          Text(type.label),
+                        ],
+                      ),
+                    );
+                  }).toList(),
 
-            FilledButton(onPressed: save, child: const Text("Uložit změny")),
-          ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        selectedType = value;
+                      });
+                    }
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              _fieldCard(
+                child: TextField(
+                  controller: titleController,
+
+                  decoration: const InputDecoration(
+                    labelText: "Název připomínky",
+
+                    prefixIcon: Icon(Icons.edit),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              _fieldCard(
+                child: TextField(
+                  controller: kmController,
+
+                  keyboardType: TextInputType.number,
+
+                  decoration: const InputDecoration(
+                    labelText: "Interval kilometrů",
+
+                    prefixIcon: Icon(Icons.speed),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              _fieldCard(
+                child: TextField(
+                  controller: daysController,
+
+                  keyboardType: TextInputType.number,
+
+                  decoration: const InputDecoration(
+                    labelText: "Interval dní",
+
+                    prefixIcon: Icon(Icons.calendar_month),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              SizedBox(
+                width: double.infinity,
+
+                height: 52,
+
+                child: FilledButton(
+                  onPressed: save,
+
+                  child: const Text("Uložit změny"),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+
+    kmController.dispose();
+
+    daysController.dispose();
+
+    super.dispose();
   }
 }
