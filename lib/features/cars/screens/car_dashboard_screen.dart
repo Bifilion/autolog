@@ -18,26 +18,23 @@ class CarDashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final carFuture = ref.read(carProvider.notifier).getCarById(carId);
+    final carAsync = ref.watch(carByIdProvider(carId));
 
-    return FutureBuilder(
-      future: carFuture,
+    return carAsync.when(
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
 
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+      error: (error, stack) => Scaffold(
+        backgroundColor: AppTheme.background,
+        appBar: AppBar(title: const Text("Chyba")),
+        body: Center(child: Text("Chyba: $error")),
+      ),
 
-        final car = snapshot.data;
-
+      data: (car) {
         if (car == null) {
           return Scaffold(
             backgroundColor: AppTheme.background,
-
             appBar: AppBar(title: const Text("Auto nenalezeno")),
-
             body: const Center(child: Text("Auto nenalezeno")),
           );
         }
@@ -62,9 +59,7 @@ class CarDashboardScreen extends ConsumerWidget {
                     Expanded(
                       child: QuickActionCard(
                         icon: Icons.build,
-
                         title: "Servis",
-
                         onTap: () {
                           context.push('/service/$carId');
                         },
@@ -76,9 +71,7 @@ class CarDashboardScreen extends ConsumerWidget {
                     Expanded(
                       child: QuickActionCard(
                         icon: Icons.local_gas_station,
-
                         title: "Tankování",
-
                         onTap: () {
                           context.push('/fuel/$carId');
                         },
@@ -90,9 +83,7 @@ class CarDashboardScreen extends ConsumerWidget {
                     Expanded(
                       child: QuickActionCard(
                         icon: Icons.notifications,
-
                         title: "Připomínky",
-
                         onTap: () {
                           context.push('/reminder/$carId/add');
                         },
@@ -133,10 +124,8 @@ class CarDashboardScreen extends ConsumerWidget {
   Widget _sectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 10),
-
       child: Text(
         title,
-
         style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
       ),
     );

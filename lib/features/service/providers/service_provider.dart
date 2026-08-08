@@ -1,4 +1,5 @@
 import 'package:autolog/core/providers/repository_providers.dart';
+import 'package:autolog/features/cars/providers/car_provider.dart';
 import 'package:autolog/features/service/models/service_record.dart';
 import 'package:autolog/features/service/providers/service_stats_provider.dart';
 import 'package:autolog/features/service/repositories/service_repository.dart';
@@ -24,12 +25,28 @@ class ServiceNotifier extends AsyncNotifier<List<ServiceRecord>> {
     return await repo.getAll();
   }
 
-  Future<void> addService(ServiceRecord service) async {
+  // Future<void> addService(ServiceRecord service) async {
+  //   final repo = await repository;
+
+  //   await repo.add(service);
+
+  //   state = AsyncData(await repo.getAll());
+
+  //   ref.invalidate(totalServiceCostProvider(service.carId));
+  //   ref.invalidate(latestServiceProvider(service.carId));
+  // }
+
+  Future addService(ServiceRecord service) async {
     final repo = await repository;
 
     await repo.add(service);
 
     state = AsyncData(await repo.getAll());
+
+    // Aktualizace kilometrů auta
+    await ref
+        .read(carProvider.notifier)
+        .updateKilometers(service.carId, service.kilometers);
 
     ref.invalidate(totalServiceCostProvider(service.carId));
     ref.invalidate(latestServiceProvider(service.carId));

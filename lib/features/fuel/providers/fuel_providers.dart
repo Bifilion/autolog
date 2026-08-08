@@ -1,4 +1,5 @@
 import 'package:autolog/core/providers/repository_providers.dart';
+import 'package:autolog/features/cars/providers/car_provider.dart';
 
 import 'package:autolog/features/fuel/models/fuel_record.dart';
 import 'package:autolog/features/fuel/providers/fuel_stats_provider.dart';
@@ -25,12 +26,28 @@ class FuelNotifier extends AsyncNotifier<List<FuelRecord>> {
     return await repo.getAll();
   }
 
-  Future<void> addFuel(FuelRecord fuel) async {
+  // Future<void> addFuel(FuelRecord fuel) async {
+  //   final repo = await repository;
+
+  //   await repo.add(fuel);
+
+  //   state = AsyncData(await repo.getAll());
+
+  //   ref.invalidate(totalFuelCostProvider(fuel.carId));
+  //   ref.invalidate(latestFuelProvider(fuel.carId));
+  // }
+
+  Future addFuel(FuelRecord fuel) async {
     final repo = await repository;
 
     await repo.add(fuel);
 
     state = AsyncData(await repo.getAll());
+
+    // Aktualizace kilometrů auta
+    await ref
+        .read(carProvider.notifier)
+        .updateKilometers(fuel.carId, fuel.kilometers);
 
     ref.invalidate(totalFuelCostProvider(fuel.carId));
     ref.invalidate(latestFuelProvider(fuel.carId));

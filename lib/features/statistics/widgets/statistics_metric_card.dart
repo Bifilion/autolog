@@ -3,62 +3,70 @@ import 'package:flutter/material.dart';
 
 class StatisticsMetricCard extends StatelessWidget {
   final IconData icon;
-
   final String title;
-
   final String value;
 
   const StatisticsMetricCard({
     super.key,
-
     required this.icon,
-
     required this.title,
-
     required this.value,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final primary = colorScheme.primary;
+
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 40,
+          // HORNÍ ČÁST
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: primary.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, size: 21, color: primary),
+              ),
 
-            height: 40,
+              const SizedBox(width: 12),
 
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(.12),
-
-              borderRadius: BorderRadius.circular(12),
-            ),
-
-            child: Icon(
-              icon,
-
-              size: 22,
-
-              color: Theme.of(context).colorScheme.primary,
-            ),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
 
-          Text(
-            value,
-
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 4),
-
-          Text(
-            title,
-
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+          // HODNOTA
+          Center(
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 27,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.7,
+              ),
+            ),
           ),
         ],
       ),

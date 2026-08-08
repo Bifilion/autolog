@@ -4,7 +4,6 @@ import 'package:autolog/features/statistics/widgets/expense_pie_chart.dart';
 import 'package:autolog/features/statistics/widgets/monthly_cost_chart.dart';
 import 'package:autolog/features/statistics/widgets/statistics_metric_card.dart';
 import 'package:autolog/features/statistics/widgets/statistics_period_selector.dart';
-import 'package:autolog/features/statistics/widgets/statistics_summary_card.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +14,7 @@ class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key, required this.carId});
 
   @override
-  ConsumerState<StatisticsScreen> createState() => _StatisticsScreenState();
+  ConsumerState createState() => _StatisticsScreenState();
 }
 
 class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
@@ -31,10 +30,8 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Statistiky")),
-
       body: Padding(
         padding: const EdgeInsets.all(16),
-
         child: statistics.when(
           loading: () => const Center(child: CircularProgressIndicator()),
 
@@ -43,21 +40,11 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
           data: (data) {
             return ListView(
               physics: const BouncingScrollPhysics(),
-
               children: [
-                StatisticsSummaryCard(
-                  total: data.totalCost,
-
-                  fuel: data.fuelCost,
-
-                  service: data.serviceCost,
-                ),
-
                 const SizedBox(height: 16),
 
                 StatisticsPeriodSelector(
                   selected: selectedPeriod,
-
                   onChanged: (period) {
                     setState(() {
                       selectedPeriod = period;
@@ -67,14 +54,13 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
 
                 const SizedBox(height: 16),
 
+                // METRIKY
                 Row(
                   children: [
                     Expanded(
                       child: StatisticsMetricCard(
                         icon: Icons.speed,
-
                         title: "Cena / km",
-
                         value: "${data.costPerKm.toStringAsFixed(2)} Kč",
                       ),
                     ),
@@ -84,9 +70,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                     Expanded(
                       child: StatisticsMetricCard(
                         icon: Icons.build,
-
                         title: "Servisů",
-
                         value: "${data.serviceCount}",
                       ),
                     ),
@@ -100,9 +84,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                     Expanded(
                       child: StatisticsMetricCard(
                         icon: Icons.local_gas_station,
-
                         title: "Tankování",
-
                         value: "${data.fuelCount}",
                       ),
                     ),
@@ -112,9 +94,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                     Expanded(
                       child: StatisticsMetricCard(
                         icon: Icons.trending_up,
-
                         title: "Největší",
-
                         value: data.biggestExpense,
                       ),
                     ),
@@ -123,15 +103,22 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
 
                 const SizedBox(height: 16),
 
-                ExpensePieChart(
-                  fuelCost: data.fuelCost,
-
-                  serviceCost: data.serviceCost,
+                // GRAF 1
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: ExpensePieChart(
+                    fuelCost: data.fuelCost,
+                    serviceCost: data.serviceCost,
+                  ),
                 ),
 
                 const SizedBox(height: 16),
 
-                MonthlyCostChart(data: data.monthlyCosts),
+                // GRAF 2
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: MonthlyCostChart(data: data.monthlyCosts),
+                ),
 
                 const SizedBox(height: 30),
               ],

@@ -25,4 +25,19 @@ class CarRepository {
   Future<Car?> getById(int id) async {
     return await isar.cars.get(id);
   }
+
+  Future<void> updateKilometers(int carId, int kilometers) async {
+    final car = await getById(carId);
+
+    if (car == null) return;
+
+    // Tachometr se nesmí snížit.
+    if (kilometers <= car.kilometers) return;
+
+    car.kilometers = kilometers;
+
+    await isar.writeTxn(() async {
+      await isar.cars.put(car);
+    });
+  }
 }
