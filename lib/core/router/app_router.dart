@@ -15,12 +15,24 @@ import 'package:autolog/features/service/screens/add_service_screen.dart';
 import 'package:autolog/features/service/screens/edit_service_screen.dart';
 import 'package:autolog/features/service/screens/service_history_screen.dart';
 import 'package:autolog/features/service/screens/service_screen.dart';
+import 'package:autolog/features/settings/screens/about_screen.dart';
+import 'package:autolog/features/settings/screens/settings_screen.dart';
 import 'package:autolog/features/statistics/screens/statistics_screen.dart';
 import 'package:go_router/go_router.dart';
 
 final appRouter = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
+    ),
+
+    GoRoute(
+      path: '/settings/about',
+      builder: (context, state) => const AboutScreen(),
+    ),
 
     GoRoute(
       path: '/add-car',

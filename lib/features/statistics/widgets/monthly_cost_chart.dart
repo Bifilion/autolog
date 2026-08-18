@@ -83,7 +83,7 @@ class MonthlyCostChart extends StatelessWidget {
                     horizontalInterval: _horizontalInterval(maxY),
                     getDrawingHorizontalLine: (value) {
                       return FlLine(
-                        color: Colors.grey.withOpacity(.12),
+                        color: Colors.grey.withValues(alpha: 0.12),
                         strokeWidth: 1,
                       );
                     },
@@ -121,7 +121,7 @@ class MonthlyCostChart extends StatelessWidget {
                       return spotIndexes.map((index) {
                         return TouchedSpotIndicatorData(
                           FlLine(
-                            color: primary.withOpacity(.35),
+                            color: primary.withValues(alpha: 0.35),
                             strokeWidth: 1,
                             dashArray: [4, 4],
                           ),
@@ -225,8 +225,8 @@ class MonthlyCostChart extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            primary.withOpacity(.18),
-                            primary.withOpacity(.02),
+                            primary.withValues(alpha: 0.18),
+                            primary.withValues(alpha: 0.02),
                           ],
                         ),
                       ),
@@ -279,7 +279,7 @@ class MonthlyCostChart extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: primary.withOpacity(.15),
+            color: primary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Icon(Icons.show_chart_rounded, color: primary),

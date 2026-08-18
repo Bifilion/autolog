@@ -136,7 +136,7 @@ class DashboardHeader extends StatelessWidget {
                       height: 36,
 
                       decoration: BoxDecoration(
-                        color: const Color(0xff7B6EF6).withOpacity(.15),
+                        color: const Color(0xff7B6EF6).withValues(alpha: 0.15),
 
                         borderRadius: BorderRadius.circular(12),
                       ),

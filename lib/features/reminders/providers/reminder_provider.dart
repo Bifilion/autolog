@@ -28,9 +28,7 @@ class ReminderNotifier extends AsyncNotifier<List<Reminder>> {
   }
 
   Future<void> updateByService(ServiceRecord service) async {
-    final repo = await repository;
-
-    final reminder = await repo.getByServiceId(service.id);
+    final reminder = await repository.getByServiceId(service.id);
 
     if (reminder == null) {
       return;
@@ -46,9 +44,9 @@ class ReminderNotifier extends AsyncNotifier<List<Reminder>> {
       ..lastKilometers = service.kilometers
       ..lastDate = service.date;
 
-    await repo.update(reminder);
+    await repository.update(reminder);
 
-    state = AsyncData(await repo.getAll());
+    state = AsyncData(await repository.getAll());
   }
 
   Future<void> removeReminder(Reminder reminder) async {

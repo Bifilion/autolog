@@ -45,7 +45,7 @@ class ServiceScreen extends ConsumerWidget {
                       height: 60,
 
                       decoration: BoxDecoration(
-                        color: const Color(0xff7B6EF6).withOpacity(.15),
+                        color: const Color(0xff7B6EF6).withValues(alpha: 0.15),
 
                         borderRadius: BorderRadius.circular(18),
                       ),
@@ -89,7 +89,7 @@ class ServiceScreen extends ConsumerWidget {
 
             itemCount: carServices.length,
 
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
 
             itemBuilder: (context, index) {
               final service = carServices[index];

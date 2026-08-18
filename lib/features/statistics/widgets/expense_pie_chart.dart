@@ -59,7 +59,7 @@ class _ExpensePieChartState extends State<ExpensePieChart> {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).colorScheme.primary.withOpacity(.15),
+                    ).colorScheme.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
@@ -227,9 +227,9 @@ class _ExpensePieChartState extends State<ExpensePieChart> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(.07),
+        color: color.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(.20)),
+        border: Border.all(color: color.withValues(alpha: 0.20)),
       ),
       child: Row(
         children: [

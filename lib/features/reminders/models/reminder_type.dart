@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
 
-@enumerated
 enum ReminderType {
   oil,
   oilFilter,

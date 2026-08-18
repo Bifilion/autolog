@@ -1,6 +1,5 @@
 import 'package:autolog/features/cars/providers/car_provider.dart';
 import 'package:autolog/features/cars/widgets/car_card.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +12,44 @@ class HomeScreen extends ConsumerWidget {
     final carsState = ref.watch(carProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Moje garáž")),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+
+        titleSpacing: 20,
+
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "AutoLog",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+
+            const SizedBox(height: 2),
+
+            const Text(
+              "Moje garáž",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+
+        actions: [
+          IconButton(
+            tooltip: "Nastavení",
+            icon: const Icon(Icons.settings_rounded),
+            onPressed: () {
+              context.push("/settings");
+            },
+          ),
+
+          const SizedBox(width: 8),
+        ],
+      ),
 
       body: carsState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -26,19 +62,23 @@ class HomeScreen extends ConsumerWidget {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
 
             itemCount: cars.length,
 
             itemBuilder: (context, index) {
               final car = cars[index];
 
-              return CarCard(
-                car: car,
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
 
-                onTap: () {
-                  context.push("/car/${car.id}");
-                },
+                child: CarCard(
+                  car: car,
+
+                  onTap: () {
+                    context.push("/car/${car.id}");
+                  },
+                ),
               );
             },
           );
@@ -50,7 +90,7 @@ class HomeScreen extends ConsumerWidget {
           context.push("/add-car");
         },
 
-        icon: const Icon(Icons.add),
+        icon: const Icon(Icons.add_rounded),
 
         label: const Text("Přidat vozidlo"),
       ),

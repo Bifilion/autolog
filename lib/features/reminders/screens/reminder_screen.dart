@@ -17,7 +17,7 @@ class ReminderScreen extends ConsumerWidget {
       height: 46,
 
       decoration: BoxDecoration(
-        color: color.withOpacity(.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(15),
       ),
 
@@ -58,7 +58,7 @@ class ReminderScreen extends ConsumerWidget {
 
                 final bColor = b.statusColor(car.kilometers, DateTime.now());
 
-                return aColor.value.compareTo(bColor.value);
+                return aColor.toARGB32().compareTo(bColor.toARGB32());
               });
 
               if (list.isEmpty) {

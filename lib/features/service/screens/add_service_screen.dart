@@ -152,7 +152,7 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
           children: [
             _section(
               child: DropdownButtonFormField<ServiceType>(
-                value: selectedType,
+                initialValue: selectedType,
 
                 decoration: const InputDecoration(labelText: "Typ servisu"),
 

@@ -87,7 +87,7 @@ class _AddCarScreenState extends ConsumerState<AddCarScreen> {
 
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(.05),
+                      color: Colors.black.withValues(alpha: 0.05),
 
                       blurRadius: 15,
                     ),

@@ -125,7 +125,7 @@ class CostOverviewCard extends ConsumerWidget {
       height: 46,
 
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withOpacity(.15),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
 
         borderRadius: BorderRadius.circular(14),
       ),

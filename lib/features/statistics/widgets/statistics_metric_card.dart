@@ -30,7 +30,7 @@ class StatisticsMetricCard extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: primary.withOpacity(0.10),
+                  color: primary.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(icon, size: 21, color: primary),

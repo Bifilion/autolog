@@ -97,7 +97,7 @@ class _EditReminderScreenState extends ConsumerState<EditReminderScreen> {
             children: [
               _fieldCard(
                 child: DropdownButtonFormField<ReminderType>(
-                  value: selectedType,
+                  initialValue: selectedType,
 
                   decoration: const InputDecoration(
                     labelText: "Typ připomínky",
