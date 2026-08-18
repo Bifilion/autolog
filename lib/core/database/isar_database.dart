@@ -26,4 +26,16 @@ class IsarDatabase {
 
     return _isar!;
   }
+
+  static Future<void> clearAllData() async {
+    final isar = await getInstance();
+
+    await isar.writeTxn(() async {
+      await isar.cars.clear();
+      await isar.serviceRecords.clear();
+      await isar.fuelRecords.clear();
+      await isar.reminders.clear();
+      await isar.expenses.clear();
+    });
+  }
 }

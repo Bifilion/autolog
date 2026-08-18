@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:autolog/core/theme/app_theme.dart';
 import 'package:autolog/features/cars/models/car.dart';
 import 'package:autolog/features/cars/providers/car_provider.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +25,16 @@ class _AddCarScreenState extends ConsumerState<AddCarScreen> {
 
   final picker = ImagePicker();
 
+  @override
+  void dispose() {
+    brandController.dispose();
+    modelController.dispose();
+    yearController.dispose();
+    kilometersController.dispose();
+
+    super.dispose();
+  }
+
   Future<void> pickImage() async {
     final image = await picker.pickImage(
       source: ImageSource.gallery,
@@ -39,16 +48,117 @@ class _AddCarScreenState extends ConsumerState<AddCarScreen> {
     }
   }
 
+  Future<void> pickYear() async {
+    final currentYear = DateTime.now().year;
+
+    final selectedYear = await showDialog<int>(
+      context: context,
+      builder: (context) {
+        int selectedYear = int.tryParse(yearController.text) ?? currentYear;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text(
+                'Rok výroby',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 350,
+                child: GridView.builder(
+                  itemCount: currentYear - 1899,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 1.5,
+                  ),
+                  itemBuilder: (context, index) {
+                    final year = currentYear - index;
+
+                    final isSelected = year == selectedYear;
+
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        setDialogState(() {
+                          selectedYear = year;
+                        });
+
+                        Navigator.pop(context, year);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(0xff5E4FE0)
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          year.toString(),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Zrušit'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (selectedYear != null) {
+      yearController.text = selectedYear.toString();
+    }
+  }
+
   Future<void> saveCar() async {
+    final brand = brandController.text.trim();
+    final model = modelController.text.trim();
+    final year = int.tryParse(yearController.text.trim());
+    final kilometers = int.tryParse(kilometersController.text.trim());
+
+    if (brand.isEmpty || model.isEmpty || year == null || kilometers == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vyplňte prosím všechny údaje.')),
+      );
+      return;
+    }
+
+    final currentYear = DateTime.now().year;
+
+    if (year < 1900 || year > currentYear) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Zadejte platný rok výroby.')),
+      );
+      return;
+    }
+
+    if (kilometers < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nájezd nemůže být záporný.')),
+      );
+      return;
+    }
+
     final car = Car(
-      brand: brandController.text.trim(),
-
-      model: modelController.text.trim(),
-
-      year: int.parse(yearController.text),
-
-      kilometers: int.parse(kilometersController.text),
-
+      brand: brand,
+      model: model,
+      year: year,
+      kilometers: kilometers,
       imagePath: imagePath,
     );
 
@@ -64,41 +174,38 @@ class _AddCarScreenState extends ConsumerState<AddCarScreen> {
     return Scaffold(
       backgroundColor: AppTheme.background,
 
-      appBar: AppBar(title: const Text("Přidat vozidlo")),
+      appBar: AppBar(title: const Text('Přidat vozidlo')),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
 
         child: Column(
           children: [
-            // FOTO AUTA
+            // FOTO VOZIDLA
             GestureDetector(
               onTap: pickImage,
 
               child: Container(
                 height: 180,
-
                 width: double.infinity,
 
                 decoration: BoxDecoration(
                   color: Colors.white,
-
                   borderRadius: BorderRadius.circular(28),
 
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
-
                       blurRadius: 15,
                     ),
                   ],
                 ),
 
                 child: imagePath == null
-                    ? Column(
+                    ? const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
 
-                        children: const [
+                        children: [
                           Icon(
                             Icons.directions_car_rounded,
                             size: 70,
@@ -108,7 +215,7 @@ class _AddCarScreenState extends ConsumerState<AddCarScreen> {
                           SizedBox(height: 10),
 
                           Text(
-                            "Přidat fotku vozidla",
+                            'Přidat fotku vozidla',
                             style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ],
@@ -118,9 +225,7 @@ class _AddCarScreenState extends ConsumerState<AddCarScreen> {
 
                         child: Image.file(
                           File(imagePath!),
-
                           fit: BoxFit.cover,
-
                           width: double.infinity,
                         ),
                       ),
@@ -129,54 +234,43 @@ class _AddCarScreenState extends ConsumerState<AddCarScreen> {
 
             const SizedBox(height: 24),
 
+            // ZNAČKA
             _input(
               controller: brandController,
-
-              label: "Značka",
-
+              label: 'Značka',
               icon: Icons.directions_car,
             ),
 
+            // MODEL
             _input(
               controller: modelController,
-
-              label: "Model",
-
+              label: 'Model',
               icon: Icons.car_repair,
             ),
 
-            _input(
-              controller: yearController,
+            // ROK VÝROBY
+            _yearInput(),
 
-              label: "Rok výroby",
-
-              icon: Icons.calendar_month,
-
-              number: true,
-            ),
-
+            // NÁJEZD
             _input(
               controller: kilometersController,
-
-              label: "Aktuální nájezd",
-
+              label: 'Aktuální nájezd',
               icon: Icons.speed,
-
               number: true,
             ),
 
             const SizedBox(height: 30),
 
+            // ULOŽIT
             SizedBox(
               width: double.infinity,
-
               height: 52,
 
               child: FilledButton(
                 onPressed: saveCar,
 
                 child: const Text(
-                  "Uložit vozidlo",
+                  'Uložit vozidlo',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -187,13 +281,32 @@ class _AddCarScreenState extends ConsumerState<AddCarScreen> {
     );
   }
 
+  Widget _yearInput() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      child: TextField(
+        controller: yearController,
+        readOnly: true,
+        onTap: pickYear,
+        decoration: InputDecoration(
+          labelText: 'Rok výroby',
+          prefixIcon: const Icon(Icons.calendar_month_rounded),
+          suffixIcon: const Icon(Icons.arrow_drop_down_rounded),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _input({
     required TextEditingController controller,
-
     required String label,
-
     required IconData icon,
-
     bool number = false,
   }) {
     return Container(
@@ -202,7 +315,12 @@ class _AddCarScreenState extends ConsumerState<AddCarScreen> {
       child: TextField(
         controller: controller,
 
-        keyboardType: number ? TextInputType.number : TextInputType.text,
+        keyboardType: number
+            ? const TextInputType.numberWithOptions(
+                decimal: false,
+                signed: false,
+              )
+            : TextInputType.text,
 
         decoration: InputDecoration(
           labelText: label,
@@ -210,12 +328,10 @@ class _AddCarScreenState extends ConsumerState<AddCarScreen> {
           prefixIcon: Icon(icon),
 
           filled: true,
-
           fillColor: Colors.white,
 
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
-
             borderSide: BorderSide.none,
           ),
         ),

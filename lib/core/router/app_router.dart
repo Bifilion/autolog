@@ -29,10 +29,7 @@ final appRouter = GoRouter(
       builder: (context, state) => const SettingsScreen(),
     ),
 
-    GoRoute(
-      path: '/settings/about',
-      builder: (context, state) => const AboutScreen(),
-    ),
+    GoRoute(path: '/about', builder: (context, state) => const AboutScreen()),
 
     GoRoute(
       path: '/add-car',

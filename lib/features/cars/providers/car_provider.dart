@@ -30,7 +30,7 @@ class CarNotifier extends AsyncNotifier<List<Car>> {
   }
 
   Future<void> updateKilometers(int carId, int kilometers) async {
-    final repo = repository;
+    final repo = await ref.watch(carRepositoryProvider.future);
 
     await repo.updateKilometers(carId, kilometers);
 
